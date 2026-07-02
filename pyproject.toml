@@ -40,7 +40,13 @@ issues = "https://github.com/asrelo/jsonschema-extras/issues"
 
 [dependency-groups]
 dev = [
-    "pylint ~=4.0",
+    "flake8 ~=7.3",
+    "flake8-bugbear >=24.8.19",
+    "flake8-comprehensions ~=3.17",
+    "flake8-docstrings ~=1.7",
+    "flake8-isort ~=7.0",
+    "flake8-quotes ~=3.4",
+    "pep8-naming ~=0.15.0",
     "pytest ~=9.0",
 ]
 
@@ -52,3 +58,14 @@ jsonschema_extras = [
 
 [tool.setuptools.dynamic]
 version = { file = ["jsonschema_extras/VERSION"] }
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3   # Vertical Hanging Indent
+lines_after_imports = 2
+include_trailing_comma = true
+force_sort_within_sections = true
+no_inline_sort = true
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+no_lines_before = ["LOCALFOLDER"]

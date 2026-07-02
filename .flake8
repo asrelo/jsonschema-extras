@@ -1,0 +1,23 @@
+[flake8]
+max-line-length = 88
+extend-ignore =
+    E203,
+    W503,
+    F405,
+    C408,
+    D1,
+    D205,
+    D214,
+    D405,
+    D410,
+    D411,
+    D415,
+extend-exclude =
+    .venv,
+    build,
+    dist,
+max-complexity = 10
+docstring-convention = google
+inline-quotes = single
+docstring-quotes = """
+avoid-escape = False
