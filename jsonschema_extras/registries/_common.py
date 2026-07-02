@@ -47,14 +47,6 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
             (Technically can be used to immediately raise
             :exc:`~referencing.exceptions.NoSuchResource`, whatever you might
             want it for.)
-
-    Attributes:
-        postpone_excs (Collection[type[BaseException]]):
-            Exposed read‑only view of postpone_excs.
-        pass_excs (Collection[type[BaseException]]):
-            Exposed read‑only view of pass_excs.
-        should_postpone_exc_fn (Callable[[BaseException], bool]):
-            Exposed read‑only view of should_postpone_exc_fn.
     '''
 
     def __init__(
@@ -71,14 +63,19 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
 
     @property
     def postpone_excs(self) -> Collection[type[BaseException]]:
+        '''Exposed read‑only view of postpone_excs passed
+        into :meth:`__init__`.'''
         return self._postpone_excs
 
     @property
     def pass_excs(self) -> Collection[type[BaseException]]:
+        '''Exposed read‑only view of pass_excs passed into :meth:`__init__`.'''
         return self._pass_excs
 
     @property
     def should_postpone_exc_fn(self) -> Callable[[BaseException], bool]:
+        '''Exposed read‑only view of should_postpone_exc_fn passed
+        into :meth:`__init__`.'''
         return self._should_postpone_exc_fn
 
     def __call__(self, uri: str) -> Resource[D]:
