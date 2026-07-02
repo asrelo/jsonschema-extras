@@ -1,5 +1,5 @@
 '''Utilities for working with the JSON Schema Python library
-[`jsonschema`](https://pypi.org/project/jsonschema/)
+[`jsonschema`](https://pypi.org/project/jsonschema/).
 
 Some features:
 
@@ -15,7 +15,7 @@ Some features:
   (:data:`~BUNDLED_SCHEMAS_URI_BASE_DEFAULT` by default).
 
 - Specific formats bundled with the library
-  (along with convenience utilities for using them)  
+  (along with convenience utilities for using them)
 
   See :mod:`jsonschema_extras.formats` for usage instructions.
 
@@ -35,7 +35,7 @@ from typing import Final
 
 from referencing.typing import Retrieve
 
-from ._common import *
+from ._common import *  # noqa: F401,F403
 from .registries import build_schemas_from_filesystem_retriever
 from .registries.retrieval import CacheFn, CacheSpecDefault
 from .registries.retrieval.json import LOADS_FN_JSON_DEFAULT

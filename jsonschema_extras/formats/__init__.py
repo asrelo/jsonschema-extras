@@ -1,5 +1,5 @@
 '''Utilities for working with format checkers, and some bundled
-format checkers
+format checkers.
 
 To use some of the bundled format checkers:
 
@@ -13,6 +13,6 @@ To use some of the bundled format checkers:
    or :class:`jsonschema.Validator` to enable validation of formats.
 '''
 
-from ._common import *
-from .numbers_range import *
-from .slice_string import *
+from ._common import *  # noqa: F401,F403
+from .numbers_range import *  # noqa: F401,F403
+from .slice_string import *   # noqa: F401,F403

@@ -67,7 +67,8 @@ def split_and_validate_uri_base(uri_base: str) -> SplitResult:
 # XXX: !?
 class NoSuchResourceFromValueError(ValueError):
     '''ValueError in a schema's URI that should be interpreted as absence
-    of the resource.'''
+    of the resource.
+    '''
 
 
 def split_and_validate_uri(uri: str) -> SplitResult:
@@ -167,7 +168,7 @@ def _retrieve_text_from_filesystem_internal(
     )
     open_kwargs.setdefault('encoding', 'utf-8')
     try:
-        with open(  #pylint: disable=unspecified-encoding
+        with open(
             Path(_file_path_from_uri_by_base_internal(uri, uri_base, path)), 'rt', **open_kwargs,
         ) as file:
             return file.read()

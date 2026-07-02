@@ -21,7 +21,7 @@ type FormatCheckFn = Callable[[object], bool]
 
 class FormatCheckingFuncInfo(NamedTuple):
     '''Data needed to register a format checking function
-    in a :class:`~jsonschema.FormatChecker`
+    in a :class:`~jsonschema.FormatChecker`.
 
     Attributes:
         format: Exact name of the format for JSON Schema.
@@ -41,7 +41,7 @@ def register_func_in_checker(
     checker: 'FormatChecker', func_info: FormatCheckingFuncInfo,
 ) -> FormatCheckFn:
     '''Register a format checking function
-    in a :class:`~jsonschema.FormatChecker`
+    in a :class:`~jsonschema.FormatChecker`.
 
     Utility function working with :class:`FormatCheckingFuncInfo`.
 
@@ -60,7 +60,7 @@ def register_funcs_in_checker(
     checker: 'FormatChecker', funcs_info: Iterable[FormatCheckingFuncInfo],
 ) -> Sequence[FormatCheckFn]:
     '''Register multiple format checking functions
-    in a :class:`~jsonschema.FormatChecker`
+    in a :class:`~jsonschema.FormatChecker`.
 
     Args:
         checker (jsonschema.FormatChecker): A `format` property checker.

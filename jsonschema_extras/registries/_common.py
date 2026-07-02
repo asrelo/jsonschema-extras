@@ -95,7 +95,7 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
         4. After all retrievers have been tried, an `ExceptionGroup`
            containing all collected exceptions is raised as the cause
            of a final :exc:`~referencing.exceptions.NoSuchResource`.
-        
+
         Raises:
             referencing.exceptions.NoSuchResource:
                 If the chain is empty (has a `RuntimeError` as cause)

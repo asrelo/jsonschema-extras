@@ -12,8 +12,9 @@ from referencing import Resource
 from referencing.retrieval import to_cached_resource as original_to_cached_resource
 from referencing.typing import Retrieve
 
-from ._common import *
-from .json import * # XXX: ?
+from ._common import *  # noqa: F403
+# XXX: ?
+from .json import *  # noqa: F403
 
 
 __all__ = (
@@ -95,7 +96,7 @@ def to_resource(
     '''
     if from_contents is None:
         from_contents = Resource.from_contents
-    def decorator(retrieve: RetrieveTextFn) -> Retrieve[D]:
+    def decorator(retrieve: RetrieveTextFn) -> Retrieve[D]:     # noqa: E301
         def wrapped_retrieve(uri: str) -> Resource[D]:
             response = retrieve(uri)
             contents = loads(response)
