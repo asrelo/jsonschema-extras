@@ -38,7 +38,7 @@ source = "https://github.com/asrelo/jsonschema-extras"
 documentation = "https://asrelo.github.io/jsonschema-extras"
 issues = "https://github.com/asrelo/jsonschema-extras/issues"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pylint ~=4.0",
     "pytest ~=9.0",
