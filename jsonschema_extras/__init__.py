@@ -8,8 +8,8 @@ Some features:
   To get access to bundled schemas within your project,
   use :func:`bundled_schemas_retriever` to create a retrieval callable to use
   when instantiating :class:`referencing.Registry`.
-  (You can use :class:`~.registries.RetrieveFunctionsChain` to chain
-  multiple retrivers.)
+  (You can use :class:`~jsonschema_extras.registries.RetrieveFunctionsChain`
+  to chain multiple retrivers.)
   Then all bundled schemas will be available via the registry with the base URI
   you passed to :func:`bundled_schemas_retriever`
   (:data:`~BUNDLED_SCHEMAS_URI_BASE_DEFAULT` by default).
@@ -20,11 +20,11 @@ Some features:
   See :mod:`jsonschema_extras.formats` for usage instructions.
 
 - Utilities for accessing JSON-encoded schemas on a local filesystem
-  (:mod:`jsonschema_extras.filesystem`).
+  (:mod:`jsonschema_extras.registries.filesystem`).
 
-- :class:`~.registries.RetrieveFunctionsChain` - chain of responsibility
-  composed of retriever functions, is used to initialize
-  :class:`referencing.Registry`.
+- :class:`~jsonschema_extras.registries.RetrieveFunctionsChain` -
+  chain of responsibility composed of retriever functions,
+  is used to initialize :class:`referencing.Registry`.
 """
 
 from collections.abc import Iterator

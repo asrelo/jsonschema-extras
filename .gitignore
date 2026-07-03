@@ -16,5 +16,7 @@ __pycache__/
 ### Project
 # building
 dist/
+# docs building
+docs/build/
 # virtual environments
 .venv/

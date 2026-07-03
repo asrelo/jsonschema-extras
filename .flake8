@@ -16,6 +16,7 @@ extend-exclude =
     .venv,
     build,
     dist,
+    docs/source/conf.py,
 max-complexity = 10
 docstring-convention = google
 inline-quotes = single

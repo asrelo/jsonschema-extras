@@ -23,6 +23,8 @@ repos:
     rev: v2.1.0
     hooks:
       - id: mypy
+        # NOTE: `exclude` is extracted from config file, see the note in the file
+        exclude: "^docs/source/conf\\.py$"
         args:
           - "--config-file=.mypy-precommit.ini"
         additional_dependencies:

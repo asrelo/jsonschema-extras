@@ -47,9 +47,12 @@ dev = [
     "flake8-docstrings ~=1.7",
     "flake8-isort ~=7.0",
     "flake8-quotes ~=3.4",
+    "furo >=2025.12.19",
     "mypy ~=2.1",
     "pep8-naming ~=0.15.0",
     "pytest ~=9.0",
+    "sphinx ~=9.0",
+    "sphinx-autodoc-typehints ~=3.10",
 ]
 
 [tool.setuptools.package-data]
@@ -76,11 +79,14 @@ no_lines_before = ["LOCALFOLDER"]
 python_version = "3.12"
 strict = true
 #pretty = true
-
-[[tool.mypy.overrides]]
-module = "*.tests"
-disallow_untyped_defs = false
+exclude = [
+    "^docs/",
+]
 
 [[tool.mypy.overrides]]
 module = "*.tests.*"
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "docs/utils/**/*.py"
 disallow_untyped_defs = false

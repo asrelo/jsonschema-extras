@@ -1,17 +1,16 @@
 from collections.abc import Callable, Collection
-from typing import Generic, TypeVar
+from typing import Generic
 
 from referencing import Resource
 from referencing.exceptions import NoSuchResource
 from referencing.typing import Retrieve
 
+from jsonschema_extras.typing import D
+
 
 __all__ = (
     'RetrieveFunctionsChain',
 )
-
-
-D = TypeVar('D')
 
 
 # NOTE: satisfies Retrieve[D]
@@ -63,20 +62,19 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
 
     @property
     def postpone_excs(self) -> Collection[type[Exception]]:
-        """Exposed read‑only view of postpone_excs passed
-        into :meth:`__init__`.
+        """Exposed read‑only view of postpone_excs passed into the constructor.
         """
         return self._postpone_excs
 
     @property
     def pass_excs(self) -> Collection[type[Exception]]:
-        """Exposed read‑only view of pass_excs passed into :meth:`__init__`."""
+        """Exposed read‑only view of pass_excs passed into the constructor."""
         return self._pass_excs
 
     @property
     def should_postpone_exc_fn(self) -> Callable[[Exception], bool]:
         """Exposed read‑only view of should_postpone_exc_fn passed
-        into :meth:`__init__`.
+        into the constructor.
         """
         return self._should_postpone_exc_fn
 

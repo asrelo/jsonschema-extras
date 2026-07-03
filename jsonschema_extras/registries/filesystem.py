@@ -16,7 +16,7 @@ All of the above properties are validated by this module's functions.
 from functools import partial
 from os import PathLike
 from pathlib import PurePosixPath, PurePath, Path
-from typing import Any, TypeVar, cast
+from typing import Any, cast
 from urllib.parse import SplitResult, unquote, urlsplit
 
 from referencing.exceptions import NoSuchResource
@@ -24,6 +24,7 @@ from referencing.typing import Retrieve
 
 from jsonschema_extras._common import Kwargs, validate_kwargs
 from jsonschema_extras._util import coerce_to_dict
+from jsonschema_extras.typing import D
 from .retrieval import (
     ResourceFromContentsFn,
     RESOURCE_FROM_CONTENTS_FN_DEFAULT,
@@ -43,9 +44,6 @@ __all__ = (
     'retrieve_text_from_filesystem',
     'build_schemas_from_filesystem_retriever',
 )
-
-
-D = TypeVar('D')
 
 
 def split_and_validate_uri_base(uri_base: str) -> SplitResult:
@@ -118,7 +116,7 @@ def file_path_from_uri_by_base(
 
     Maps a URI under `uri_base` to a file under `path`. See the rules
     of this mapping and **restrictions on URIs** in description
-    of :mod:`jsonschema_extras.filesystem`.
+    of :mod:`jsonschema_extras.registries.filesystem`.
 
     Args:
         uri (str):  URI of the schema to retrieve.
@@ -194,7 +192,7 @@ def retrieve_text_from_filesystem(
 
     Maps URIs under `uri_base` to files under `path`. See the rules
     of this mapping and **restrictions on URIs** in description
-    of :mod:`jsonschema_extras.filesystem`.
+    of :mod:`jsonschema_extras.registries.filesystem`.
 
     Args:
         uri (str):  URI of the schema to retrieve.
@@ -232,7 +230,7 @@ def retrieve_text_from_filesystem(
         ValueError:
             - On invalid `uri` or `uri_base`.
             - If there was an encoding error when reading the file.
-              Passed through from the Python built-in function :func:`open`.
+                Passed through from the Python built-in function :func:`open`.
         TypeError:
             If there are arguments in `open_kwargs` other than allowed
             arguments.
@@ -255,7 +253,7 @@ def build_schemas_from_filesystem_retriever(
 
     The returned retriever maps URIs under `uri_base` to files under `path`.
     See the rules of this mapping and **restrictions on URIs** in description
-    of :mod:`jsonschema_extras.filesystem`.
+    of :mod:`jsonschema_extras.registries.filesystem`.
 
     Args:
         uri_base (str):
@@ -268,9 +266,6 @@ def build_schemas_from_filesystem_retriever(
             Keyword arguments to pass to Python built-in function :func:`open`.
             Allowed arguments: `buffering`, `encoding` (default: `'utf-8'`),
             `errors`, `newline`.
-        open_buffering (int, optional):
-            Optional integer used to set the buffering policy.
-            See the Python built-in function :func:`open`.
         cache (CacheFn | CacheSpecDefault, optional):
             Caching decorator for :class:`~referencing.typing.Retrieve`,
             or `'default'` to use the default caching implementation
@@ -279,7 +274,7 @@ def build_schemas_from_filesystem_retriever(
         loads (LoadTextFn, optional):
             Function to deserialize resource contents (for example,
             JSON data structure from JSON string).
-            Default: :data:`~.retrieval.json.LOADS_FN_JSON_DEFAULT` (for JSON).
+            Default: :obj:`~.retrieval.json.LOADS_FN_JSON_DEFAULT` (for JSON).
         from_contents (ResourceFromContentsFn, optional):
             Function to produce a :class:`~referencing.Resource`
             from deserialized resource contents.

@@ -6,13 +6,14 @@ It uses `lru_cache(maxsize=None)` as of version 0.37 .
 """
 
 from collections.abc import Callable
-from typing import Any, Final, Literal, TypeVar
+from typing import Any, Final, Literal
 
 from referencing import Resource
 from referencing.retrieval import to_cached_resource as original_to_cached_resource
 from referencing.typing import Retrieve
 
 # XXX: ?
+from jsonschema_extras.typing import D
 from ._common import *  # noqa: F403
 from .json import *  # noqa: F403
 
@@ -27,9 +28,6 @@ __all__ = (
     'to_cached_resource',
     'to_maybe_cached_resource',
 )
-
-
-D = TypeVar('D')
 
 
 #: Function to retrieve serialized resource data by URI
@@ -51,7 +49,7 @@ type RetrieveTextFn = Callable[[str], str]
 #:     D: Resource contents.
 #:
 #: Returns:
-#:     Resource[D]: Produced :class:`~referencing.Resource` instance.
+#:     Resource[D]: Produced :external:class:`~referencing.Resource` instance.
 type ResourceFromContentsFn[D] = Callable[[D], Resource[D]]
 
 #: Default implementation of :data:`ResourceFromContentsFn`
@@ -62,7 +60,7 @@ RESOURCE_FROM_CONTENTS_FN_DEFAULT: Final[ResourceFromContentsFn[Any]] = (
 )
 
 
-#: Function decorator for :class:`~reference.typing.Retrieve`
+#: Function decorator for :class:`~referencing.typing.Retrieve`
 #: to cache retrieved resources by their URIs.
 type CacheFn[D] = Callable[[Retrieve[D]], Retrieve[D]]
 
@@ -85,7 +83,7 @@ def to_resource(
         loads (LoadTextFn, optional):
             Function to deserialize resource contents (for example,
             JSON data structure from JSON string).
-            Default: :data:`~.retrieval.json.LOADS_FN_JSON_DEFAULT` (for JSON).
+            Default: :obj:`~.json.LOADS_FN_JSON_DEFAULT` (for JSON).
         from_contents (ResourceFromContentsFn, optional):
             Function to produce a :class:`~referencing.Resource`
             from deserialized resource contents.
@@ -125,7 +123,7 @@ def to_cached_resource(
         loads (LoadTextFn, optional):
             Function to deserialize resource contents (for example,
             JSON data structure from JSON string).
-            Default: :data:`~.retrieval.json.LOADS_FN_JSON_DEFAULT` (for JSON).
+            Default: :obj:`~.json.LOADS_FN_JSON_DEFAULT` (for JSON).
         from_contents (ResourceFromContentsFn, optional):
             Function to produce a :class:`~referencing.Resource`
             from deserialized resource contents.
@@ -161,7 +159,7 @@ def to_maybe_cached_resource(
         loads (LoadTextFn, optional):
             Function to deserialize resource contents (for example,
             JSON data structure from JSON string).
-            Default: :data:`~.retrieval.json.LOADS_FN_JSON_DEFAULT` (for JSON).
+            Default: :obj:`~.json.LOADS_FN_JSON_DEFAULT` (for JSON).
         from_contents (ResourceFromContentsFn, optional):
             Function to produce a :class:`~referencing.Resource`
             from deserialized resource contents.
