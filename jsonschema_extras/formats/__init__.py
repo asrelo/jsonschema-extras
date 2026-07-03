@@ -1,4 +1,4 @@
-'''Utilities for working with format checkers, and some bundled
+"""Utilities for working with format checkers, and some bundled
 format checkers.
 
 To use some of the bundled format checkers:
@@ -11,8 +11,8 @@ To use some of the bundled format checkers:
    of :class:`~._common.FormatCheckingFuncInfo`;
 3. pass the format checker to :func:`jsonschema.validate`
    or :class:`jsonschema.Validator` to enable validation of formats.
-'''
+"""
 
 from ._common import *  # noqa: F401,F403
 from .numbers_range import *  # noqa: F401,F403
-from .slice_string import *   # noqa: F401,F403
+from .slice_string import *  # noqa: F401,F403

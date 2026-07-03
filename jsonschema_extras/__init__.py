@@ -1,4 +1,4 @@
-'''Utilities for working with the JSON Schema Python library
+"""Utilities for working with the JSON Schema Python library
 [`jsonschema`](https://pypi.org/project/jsonschema/).
 
 Some features:
@@ -25,7 +25,7 @@ Some features:
 - :class:`~.registries.RetrieveFunctionsChain` - chain of responsibility
   composed of retriever functions, is used to initialize
   :class:`referencing.Registry`.
-'''
+"""
 
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -49,10 +49,11 @@ __all__ = (
 
 
 def bundled_schemas_files() -> Traversable:
-    '''Returns a :class:`~importlib.abc.Traversable` object
+    """Returns a :class:`~importlib.abc.Traversable` object
     containing resources for bundled schemas.
 
-    Built upon :func:`importlib.resources.files`.'''
+    Built upon :func:`importlib.resources.files`.
+    """
     return (importlib.resources.files('jsonschema_extras') / 'schemas')
 
 
@@ -68,7 +69,7 @@ def bundled_schemas_retriever(
     open_buffering: int = -1,
     cache: CacheFn | CacheSpecDefault | None = None,
 ) -> Iterator[Retrieve]:
-    '''Context manager producing a retrieval callable for this library's
+    """Context manager producing a retrieval callable for this library's
     bundled schemas.
 
     Warning:
@@ -102,12 +103,14 @@ def bundled_schemas_retriever(
         cannot provide a persistent path to a directory which could be accessed
         by common code at any time. The lifecycle has to be explicit
         due to using package resources.
-    '''
+    """
     with importlib.resources.as_file(bundled_schemas_files()) as bundled_schemas_path:
         yield build_schemas_from_filesystem_retriever(
             uri_base,
             bundled_schemas_path,
-            open_kwargs=dict(buffering=open_buffering, encoding=_BUNDLED_SCHEMAS_ENCODING),
+            open_kwargs=dict(
+                buffering=open_buffering, encoding=_BUNDLED_SCHEMAS_ENCODING,
+            ),
             cache=cache,
             loads=LOADS_FN_JSON_DEFAULT,
         )

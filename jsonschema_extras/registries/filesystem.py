@@ -1,4 +1,4 @@
-'''Utilities for accessing JSON-encoded schemas on a local filesystem.
+"""Utilities for accessing JSON-encoded schemas on a local filesystem.
 
 Functions in this module match up a path to a directory on a filesystem
 (root of local schemas hierarchy) with a base URI for schemas. When retrieving
@@ -11,7 +11,7 @@ each must have the scheme `file:` and a path, **no** other components
 are allowed (i.e. **no** credentials, netloc, query, fragment).
 "Parent" segments `..` in the path of a schema URI are prohibited.
 All of the above properties are validated by this module's functions.
-'''
+"""
 
 from functools import partial
 from os import PathLike
@@ -52,7 +52,9 @@ def split_and_validate_uri_base(uri_base: str) -> SplitResult:
     # here scheme is a default value:
     uri_base_split = urlsplit(uri_base, scheme='')
     if uri_base_split.scheme != 'file':
-        raise ValueError(f'base URI should have scheme \'file:\', got: {uri_base_split.scheme!r}')
+        raise ValueError(
+            f'base URI should have scheme \'file:\', got: {uri_base_split.scheme!r}'
+        )
     if uri_base_split.netloc:
         raise ValueError('base URI should not have a netloc')
     if (uri_base_split.username is not None) or (uri_base_split.password is not None):
@@ -66,9 +68,9 @@ def split_and_validate_uri_base(uri_base: str) -> SplitResult:
 
 # XXX: !?
 class NoSuchResourceFromValueError(ValueError):
-    '''ValueError in a schema's URI that should be interpreted as absence
+    """ValueError in a schema's URI that should be interpreted as absence
     of the resource.
-    '''
+    """
 
 
 def split_and_validate_uri(uri: str) -> SplitResult:
@@ -86,12 +88,15 @@ def split_and_validate_uri(uri: str) -> SplitResult:
     return uri_split
 
 
-def _relative_path_from_uri_by_base(uri: str, uri_base: str | SplitResult) -> PurePosixPath:
+def _relative_path_from_uri_by_base(
+    uri: str, uri_base: str | SplitResult,
+) -> PurePosixPath:
     if not isinstance(uri_base, SplitResult):
-        uri_base_split = split_and_validate_uri_base(uri_base)  # XXX: ValueError s are propagated
+        # XXX: ValueError s are propagated
+        uri_base_split = split_and_validate_uri_base(uri_base)
     else:
         uri_base_split = uri_base
-    uri_split = split_and_validate_uri(uri) # XXX: ValueError s are propagated
+    uri_split = split_and_validate_uri(uri)  # XXX: ValueError s are propagated
     uri_path = PurePosixPath(unquote(uri_split.path))
     uri_base_path = PurePosixPath(unquote(uri_base_split.path))
     try:
@@ -109,7 +114,7 @@ def _file_path_from_uri_by_base_internal(
 def file_path_from_uri_by_base(
     uri: str, uri_base: str, path: str | PathLike[str],
 ) -> PurePath:
-    '''Computes the file path of a locally stored schema based on its URI.
+    """Computes the file path of a locally stored schema based on its URI.
 
     Maps a URI under `uri_base` to a file under `path`. See the rules
     of this mapping and **restrictions on URIs** in description
@@ -151,7 +156,7 @@ def file_path_from_uri_by_base(
         ...     '/var/data/schemas',
         ... ).as_posix()
         '/var/data/schemas/definitions/address.json'
-    '''
+    """
     return _file_path_from_uri_by_base_internal(uri, uri_base, path)
 
 
@@ -164,12 +169,17 @@ def _retrieve_text_from_filesystem_internal(
     else:
         open_kwargs = {}
     open_kwargs = cast(
-        dict, validate_kwargs(open_kwargs, allowed=('buffering', 'encoding', 'errors', 'newline'))
+        dict,
+        validate_kwargs(
+            open_kwargs, allowed=('buffering', 'encoding', 'errors', 'newline'),
+        ),
     )
     open_kwargs.setdefault('encoding', 'utf-8')
     try:
         with open(
-            Path(_file_path_from_uri_by_base_internal(uri, uri_base, path)), 'rt', **open_kwargs,
+            Path(_file_path_from_uri_by_base_internal(uri, uri_base, path)),
+            'rt',
+            **open_kwargs,
         ) as file:
             return file.read()
     except (NoSuchResourceFromValueError, FileNotFoundError) as err:
@@ -177,9 +187,10 @@ def _retrieve_text_from_filesystem_internal(
 
 
 def retrieve_text_from_filesystem(
-    uri: str, uri_base: str, path: str | PathLike[str], *, open_kwargs: Kwargs | None = None,
+    uri: str, uri_base: str, path: str | PathLike[str],
+    *, open_kwargs: Kwargs | None = None,
 ) -> str:
-    '''Retrieves text of a schema on a filesystem under a specified root.
+    """Retrieves text of a schema on a filesystem under a specified root.
 
     Maps URIs under `uri_base` to files under `path`. See the rules
     of this mapping and **restrictions on URIs** in description
@@ -225,8 +236,10 @@ def retrieve_text_from_filesystem(
         TypeError:
             If there are arguments in `open_kwargs` other than allowed
             arguments.
-    '''
-    return _retrieve_text_from_filesystem_internal(uri, uri_base, path, open_kwargs=open_kwargs)
+    """
+    return _retrieve_text_from_filesystem_internal(
+        uri, uri_base, path, open_kwargs=open_kwargs,
+    )
 
 
 def build_schemas_from_filesystem_retriever(
@@ -237,7 +250,7 @@ def build_schemas_from_filesystem_retriever(
     loads: LoadTextFn[D] = LOADS_FN_JSON_DEFAULT,
     from_contents: ResourceFromContentsFn[D] = RESOURCE_FROM_CONTENTS_FN_DEFAULT,
 ) -> Retrieve[D]:
-    '''Returns a new retrieval callable for schemas on a filesystem
+    """Returns a new retrieval callable for schemas on a filesystem
     under a specified root.
 
     The returned retriever maps URIs under `uri_base` to files under `path`.
@@ -282,7 +295,7 @@ def build_schemas_from_filesystem_retriever(
         TypeError:
             If there are arguments in `open_kwargs` other than allowed
             arguments.
-    '''
+    """
     uri_base_split = split_and_validate_uri_base(uri_base)
     retrieve_text_from_filesystem_fn = partial(
         _retrieve_text_from_filesystem_internal,

@@ -1,9 +1,9 @@
-'''Helpers related to resource retrieval.
+"""Helpers related to resource retrieval.
 
 For the default implementation of resource caching,
 see :func:`referencing.retrieval.to_cached_resource`.
 It uses `lru_cache(maxsize=None)` as of version 0.37 .
-'''
+"""
 
 from collections.abc import Callable
 from typing import Literal, TypeVar
@@ -12,8 +12,8 @@ from referencing import Resource
 from referencing.retrieval import to_cached_resource as original_to_cached_resource
 from referencing.typing import Retrieve
 
-from ._common import *  # noqa: F403
 # XXX: ?
+from ._common import *  # noqa: F403
 from .json import *  # noqa: F403
 
 
@@ -58,7 +58,9 @@ type ResourceFromContentsFn[D] = Callable[[D], Resource[D]]
 #: Default implementation of :data:`ResourceFromContentsFn`
 #:
 #: Uses the default :meth:`~referencing.Resource.from_contents` strategy.
-RESOURCE_FROM_CONTENTS_FN_DEFAULT: Final[ResourceFromContentsFn] = Resource.from_contents
+RESOURCE_FROM_CONTENTS_FN_DEFAULT: Final[ResourceFromContentsFn] = (
+    Resource.from_contents
+)
 
 
 #: Function decorator for :class:`~reference.typing.Retrieve`
@@ -73,7 +75,7 @@ def to_resource(
     loads: LoadTextFn[D] = LOADS_FN_JSON_DEFAULT,
     from_contents: ResourceFromContentsFn[D] = RESOURCE_FROM_CONTENTS_FN_DEFAULT,
 ) -> Callable[[RetrieveTextFn], Retrieve[D]]:
-    '''Build a decorator to make a resource retrieval callable
+    """Build a decorator to make a resource retrieval callable
     out of a :data:`RetrieveTextFn`.
 
     :data:`RetrieveTextFn` retrieves serialized representation by URI.
@@ -93,7 +95,7 @@ def to_resource(
     Returns:
         Decorator taking a text retriever :data:`RetrieveTextFn`
         and returning a caching resource retriever.
-    '''
+    """
     if from_contents is None:
         from_contents = Resource.from_contents
     def decorator(retrieve: RetrieveTextFn) -> Retrieve[D]:     # noqa: E301
@@ -110,7 +112,7 @@ def to_cached_resource(
     loads: LoadTextFn[D] = LOADS_FN_JSON_DEFAULT,
     from_contents: ResourceFromContentsFn[D] = RESOURCE_FROM_CONTENTS_FN_DEFAULT,
 ) -> Callable[[RetrieveTextFn], Retrieve[D]]:
-    '''Build a decorator to make a resource retrieval callable
+    """Build a decorator to make a resource retrieval callable
     out of a :data:`RetrieveTextFn` with caching.
 
     :data:`RetrieveTextFn` retrieves serialized representation by URI.
@@ -135,11 +137,10 @@ def to_cached_resource(
     Returns:
         Decorator taking a text retriever :data:`RetrieveTextFn`
         and returning a caching resource retriever.
-    '''
-    kwargs_extra = {}
-    if from_contents is not None:
-        kwargs_extra['from_contents'] = from_contents
-    return original_to_cached_resource(cache=cache, loads=loads, **kwargs_extra)
+    """
+    return original_to_cached_resource(
+        cache=cache, loads=loads, from_contents=from_contents,
+    )
 
 
 def to_maybe_cached_resource(
@@ -147,7 +148,7 @@ def to_maybe_cached_resource(
     loads: LoadTextFn[D] = LOADS_FN_JSON_DEFAULT,
     from_contents: ResourceFromContentsFn[D] = RESOURCE_FROM_CONTENTS_FN_DEFAULT,
 ) -> Callable[[RetrieveTextFn], Retrieve[D]]:
-    '''Build a decorator to make a resource retrieval callable
+    """Build a decorator to make a resource retrieval callable
     out of a :data:`RetrieveTextFn` with optional caching.
 
     :data:`RetrieveTextFn` retrieves serialized representation by URI.
@@ -172,7 +173,7 @@ def to_maybe_cached_resource(
     Returns:
         Decorator taking a text retriever :data:`RetrieveTextFn`
         and returning a resource retriever.
-    '''
+    """
     if cache is None:
         return to_resource(loads=loads, from_contents=from_contents)
     if callable(cache):
@@ -181,4 +182,6 @@ def to_maybe_cached_resource(
         raise ValueError(f'Unknown cache specification: {cache!r}')
     else:
         cache_to_pass = None
-    return to_cached_resource(cache=cache_to_pass, loads=loads, from_contents=from_contents)
+    return to_cached_resource(
+        cache=cache_to_pass, loads=loads, from_contents=from_contents,
+    )

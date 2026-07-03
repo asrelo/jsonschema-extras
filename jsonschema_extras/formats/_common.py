@@ -1,6 +1,7 @@
 from collections.abc import Callable, Iterable, Sequence
 from typing import TYPE_CHECKING, NamedTuple
 
+
 if TYPE_CHECKING:
     from jsonschema import FormatChecker
 
@@ -20,7 +21,7 @@ type FormatCheckFn = Callable[[object], bool]
 
 
 class FormatCheckingFuncInfo(NamedTuple):
-    '''Data needed to register a format checking function
+    """Data needed to register a format checking function
     in a :class:`~jsonschema.FormatChecker`.
 
     Attributes:
@@ -31,7 +32,7 @@ class FormatCheckingFuncInfo(NamedTuple):
             Type(s) of exceptions raised by `func` on an invalid value.
             Exceptions of other types are immediately propagated.
             See :meth:`~jsonschema.FormatChecker.checks` for details.
-    '''
+    """
     format: str
     func: FormatCheckFn
     raises: type[Exception] | tuple[type[Exception], ...] = ()
@@ -40,7 +41,7 @@ class FormatCheckingFuncInfo(NamedTuple):
 def register_func_in_checker(
     checker: 'FormatChecker', func_info: FormatCheckingFuncInfo,
 ) -> FormatCheckFn:
-    '''Register a format checking function
+    """Register a format checking function
     in a :class:`~jsonschema.FormatChecker`.
 
     Utility function working with :class:`FormatCheckingFuncInfo`.
@@ -52,14 +53,14 @@ def register_func_in_checker(
 
     Returns:
         `func_info.func`
-    '''
+    """
     return checker.checks(func_info.format, func_info.raises)(func_info.func)
 
 
 def register_funcs_in_checker(
     checker: 'FormatChecker', funcs_info: Iterable[FormatCheckingFuncInfo],
 ) -> Sequence[FormatCheckFn]:
-    '''Register multiple format checking functions
+    """Register multiple format checking functions
     in a :class:`~jsonschema.FormatChecker`.
 
     Args:
@@ -69,5 +70,5 @@ def register_funcs_in_checker(
 
     Returns:
         sequence of `func_info.func` objects
-    '''
+    """
     return [register_func_in_checker(checker, func_info) for func_info in funcs_info]

@@ -16,7 +16,7 @@ D = TypeVar('D')
 
 # NOTE: satisfies Retrieve[D]
 class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
-    '''Chain of :class:`~referencing.typing.Retrieve` callables that attempts
+    """Chain of :class:`~referencing.typing.Retrieve` callables that attempts
     each retriever in order until one succeeds.
 
     Warning:
@@ -47,7 +47,7 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
             (Technically can be used to immediately raise
             :exc:`~referencing.exceptions.NoSuchResource`, whatever you might
             want it for.)
-    '''
+    """
 
     def __init__(
         self,
@@ -63,23 +63,25 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
 
     @property
     def postpone_excs(self) -> Collection[type[BaseException]]:
-        '''Exposed read‑only view of postpone_excs passed
-        into :meth:`__init__`.'''
+        """Exposed read‑only view of postpone_excs passed
+        into :meth:`__init__`.
+        """
         return self._postpone_excs
 
     @property
     def pass_excs(self) -> Collection[type[BaseException]]:
-        '''Exposed read‑only view of pass_excs passed into :meth:`__init__`.'''
+        """Exposed read‑only view of pass_excs passed into :meth:`__init__`."""
         return self._pass_excs
 
     @property
     def should_postpone_exc_fn(self) -> Callable[[BaseException], bool]:
-        '''Exposed read‑only view of should_postpone_exc_fn passed
-        into :meth:`__init__`.'''
+        """Exposed read‑only view of should_postpone_exc_fn passed
+        into :meth:`__init__`.
+        """
         return self._should_postpone_exc_fn
 
     def __call__(self, uri: str) -> Resource[D]:
-        '''Retrieve the resource identified by `uri` using the chained
+        """Retrieve the resource identified by `uri` using the chained
         retrievers.
 
         The method iterates over the stored retrievers:
@@ -101,7 +103,7 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
                 If the chain is empty (has a `RuntimeError` as cause)
                 or if all retrievers fail (has an `ExceptionGroup` listing
                 all exceptions from retrievers).
-        '''
+        """
         if len(self) == 0:
             cause = RuntimeError('The chain of retrievers is empty')
             raise NoSuchResource(uri) from cause
@@ -111,12 +113,19 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
                 return retrieve(uri)
             except (NoSuchResource, *self._postpone_excs) as err:
                 if (
-                    ((len(self._pass_excs) > 0) and isinstance(err, tuple(self._pass_excs)))
+                    (
+                        (len(self._pass_excs) > 0)
+                        and isinstance(err, tuple(self._pass_excs))
+                    )
                     or (not self._should_postpone_exc_fn(err))
                 ):
                     raise
                 excs.append(err)
         exc_group = ExceptionGroup(
-            f'All {len(self)!r} retrievers in the chain failed to retrieve the resource', excs
+            (
+                f'All {len(self)!r} retrievers in the chain'
+                f' failed to retrieve the resource'
+            ),
+            excs,
         )
         raise NoSuchResource(uri) from exc_group

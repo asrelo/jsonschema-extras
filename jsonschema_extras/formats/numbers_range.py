@@ -12,4 +12,7 @@ def is_numbers_range(instance: object) -> bool:
         and (instance[0] <= instance[1])
     )
 
-is_numbers_range_info = FormatCheckingFuncInfo('numbers-range', is_numbers_range, (TypeError,))
+
+is_numbers_range_info = FormatCheckingFuncInfo(
+    'numbers-range', is_numbers_range, (TypeError,),
+)

@@ -17,10 +17,14 @@ def validate_kwargs(
     allowed += [s for s in required if s not in allowed]
     unexpected = [s for s in kwargs if s not in allowed]
     if len(unexpected) > 0:
-        raise TypeError('got unexpected keyword argument(s): {0}'.format(', '.join(unexpected)))
+        raise TypeError(
+            'got unexpected keyword argument(s): {0}'.format(', '.join(unexpected))
+        )
     missing = [s for s in required if s not in kwargs]
     if len(missing) > 0:
-        raise TypeError('missing required keyword argument(s): {0}'.format(', '.join(missing)))
+        raise TypeError(
+            'missing required keyword argument(s): {0}'.format(', '.join(missing))
+        )
     return kwargs
 
 

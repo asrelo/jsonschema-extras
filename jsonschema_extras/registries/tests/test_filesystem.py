@@ -72,7 +72,8 @@ class TestSplitAndValidateUri:
             split_and_validate_uri(invalid_uri)
 
     @pytest.mark.parametrize(
-        'invalid_uri', ['file:/path?query=value', 'file:path?query%3Dvalue', 'file:/path?key=val'],
+        'invalid_uri',
+        ['file:/path?query=value', 'file:path?query%3Dvalue', 'file:/path?key=val'],
     )
     @staticmethod
     def test_invalid_uri_raises_no_such_resource_from_value_error(invalid_uri):
@@ -89,7 +90,10 @@ class TestFilePathFromUriByBase:
                 'file:/server/share/file.txt', 'file:/server/share/', '/local/base',
                 '/local/base/file.txt',
             ),
-            ('file:/server/share/file.txt', 'file:/server/share', '/base', '/base/file.txt'),
+            (
+                'file:/server/share/file.txt', 'file:/server/share', '/base',
+                '/base/file.txt',
+            ),
             (
                 'file:/server/share/dir/file.txt', 'file:/server/share', '/base',
                 '/base/dir/file.txt',
@@ -99,7 +103,9 @@ class TestFilePathFromUriByBase:
                 '/base/a/b/c/file.txt',
             ),
             (
-                'file:/server/share/file%20name%2Bversion.txt', 'file:/server/share/', '/base',
+                'file:/server/share/file%20name%2Bversion.txt',
+                'file:/server/share/',
+                '/base',
                 '/base/file name+version.txt',
             ),
             (
