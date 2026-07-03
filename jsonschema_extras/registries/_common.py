@@ -52,9 +52,9 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
     def __init__(
         self,
         *retrievers: Retrieve[D],
-        postpone_excs: Collection[type[BaseException]] = (),
-        pass_excs: Collection[type[BaseException]] = (),
-        should_postpone_exc_fn: Callable[[BaseException], bool] = lambda e: False,
+        postpone_excs: Collection[type[Exception]] = (),
+        pass_excs: Collection[type[Exception]] = (),
+        should_postpone_exc_fn: Callable[[Exception], bool] = lambda e: False,
     ):
         super().__init__(retrievers)
         self._postpone_excs = postpone_excs
@@ -62,19 +62,19 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
         self._should_postpone_exc_fn = should_postpone_exc_fn
 
     @property
-    def postpone_excs(self) -> Collection[type[BaseException]]:
+    def postpone_excs(self) -> Collection[type[Exception]]:
         """Exposed read‑only view of postpone_excs passed
         into :meth:`__init__`.
         """
         return self._postpone_excs
 
     @property
-    def pass_excs(self) -> Collection[type[BaseException]]:
+    def pass_excs(self) -> Collection[type[Exception]]:
         """Exposed read‑only view of pass_excs passed into :meth:`__init__`."""
         return self._pass_excs
 
     @property
-    def should_postpone_exc_fn(self) -> Callable[[BaseException], bool]:
+    def should_postpone_exc_fn(self) -> Callable[[Exception], bool]:
         """Exposed read‑only view of should_postpone_exc_fn passed
         into :meth:`__init__`.
         """
@@ -107,11 +107,14 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
         if len(self) == 0:
             cause = RuntimeError('The chain of retrievers is empty')
             raise NoSuchResource(uri) from cause
-        excs = []
+        exc_types_to_postpone: tuple[type[Exception], ...] = (
+            NoSuchResource, *self._postpone_excs,
+        )
+        excs: list[Exception] = []
         for retrieve in self:
             try:
                 return retrieve(uri)
-            except (NoSuchResource, *self._postpone_excs) as err:
+            except exc_types_to_postpone as err:
                 if (
                     (
                         (len(self._pass_excs) > 0)

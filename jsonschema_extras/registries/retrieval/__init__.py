@@ -6,7 +6,7 @@ It uses `lru_cache(maxsize=None)` as of version 0.37 .
 """
 
 from collections.abc import Callable
-from typing import Literal, TypeVar
+from typing import Any, Final, Literal, TypeVar
 
 from referencing import Resource
 from referencing.retrieval import to_cached_resource as original_to_cached_resource
@@ -21,7 +21,6 @@ __all__ = (
     'LoadTextFn',
     'RetrieveTextFn',
     'ResourceFromContentsFn',
-    'RESOURCE_FROM_CONTENTS_FN_DEFAULT',
     'CacheFn',
     'CacheSpecDefault',
     'to_resource',
@@ -58,7 +57,7 @@ type ResourceFromContentsFn[D] = Callable[[D], Resource[D]]
 #: Default implementation of :data:`ResourceFromContentsFn`
 #:
 #: Uses the default :meth:`~referencing.Resource.from_contents` strategy.
-RESOURCE_FROM_CONTENTS_FN_DEFAULT: Final[ResourceFromContentsFn] = (
+RESOURCE_FROM_CONTENTS_FN_DEFAULT: Final[ResourceFromContentsFn[Any]] = (
     Resource.from_contents
 )
 
@@ -96,8 +95,6 @@ def to_resource(
         Decorator taking a text retriever :data:`RetrieveTextFn`
         and returning a caching resource retriever.
     """
-    if from_contents is None:
-        from_contents = Resource.from_contents
     def decorator(retrieve: RetrieveTextFn) -> Retrieve[D]:     # noqa: E301
         def wrapped_retrieve(uri: str) -> Resource[D]:
             response = retrieve(uri)

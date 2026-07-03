@@ -16,7 +16,7 @@ All of the above properties are validated by this module's functions.
 from functools import partial
 from os import PathLike
 from pathlib import PurePosixPath, PurePath, Path
-from typing import TypeVar, cast
+from typing import Any, TypeVar, cast
 from urllib.parse import SplitResult, unquote, urlsplit
 
 from referencing.exceptions import NoSuchResource
@@ -169,7 +169,7 @@ def _retrieve_text_from_filesystem_internal(
     else:
         open_kwargs = {}
     open_kwargs = cast(
-        dict,
+        dict[str, Any],
         validate_kwargs(
             open_kwargs, allowed=('buffering', 'encoding', 'errors', 'newline'),
         ),
@@ -181,7 +181,7 @@ def _retrieve_text_from_filesystem_internal(
             'rt',
             **open_kwargs,
         ) as file:
-            return file.read()
+            return file.read()  # type: ignore[no-any-return]
     except (NoSuchResourceFromValueError, FileNotFoundError) as err:
         raise NoSuchResource(uri) from err
 
@@ -246,7 +246,7 @@ def build_schemas_from_filesystem_retriever(
     uri_base: str,
     path: str | PathLike[str],
     *, open_kwargs: Kwargs | None = None,
-    cache: CacheFn | CacheSpecDefault | None = None,
+    cache: CacheFn[D] | CacheSpecDefault | None = None,
     loads: LoadTextFn[D] = LOADS_FN_JSON_DEFAULT,
     from_contents: ResourceFromContentsFn[D] = RESOURCE_FROM_CONTENTS_FN_DEFAULT,
 ) -> Retrieve[D]:

@@ -31,7 +31,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 import importlib.resources
 from importlib.resources.abc import Traversable
-from typing import Final
+from typing import Any, Final
 
 from referencing.typing import Retrieve
 
@@ -67,7 +67,7 @@ _BUNDLED_SCHEMAS_ENCODING: Final = 'utf-8'
 def bundled_schemas_retriever(
     *, uri_base: str = BUNDLED_SCHEMAS_URI_BASE_DEFAULT,
     open_buffering: int = -1,
-    cache: CacheFn | CacheSpecDefault | None = None,
+    cache: CacheFn[Any] | CacheSpecDefault | None = None,
 ) -> Iterator[Retrieve]:
     """Context manager producing a retrieval callable for this library's
     bundled schemas.
