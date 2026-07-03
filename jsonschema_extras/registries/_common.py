@@ -8,11 +8,6 @@ from referencing.typing import Retrieve
 from jsonschema_extras.typing import D
 
 
-__all__ = (
-    'RetrieveFunctionsChain',
-)
-
-
 # NOTE: satisfies Retrieve[D]
 class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
     """Chain of :class:`~referencing.typing.Retrieve` callables that attempts

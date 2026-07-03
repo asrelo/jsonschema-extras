@@ -35,7 +35,6 @@ from typing import Any, Final
 
 from referencing.typing import Retrieve
 
-from ._common import *  # noqa: F401,F403
 from .registries import build_schemas_from_filesystem_retriever
 from .registries.retrieval import CacheFn, CacheSpecDefault
 from .registries.retrieval.json import LOADS_FN_JSON_DEFAULT

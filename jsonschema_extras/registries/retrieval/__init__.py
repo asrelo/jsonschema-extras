@@ -20,6 +20,8 @@ from .json import *  # noqa: F403
 
 __all__ = (
     'LoadTextFn',
+    'schema_data_from_json_text',
+    'LOADS_FN_JSON_DEFAULT',
     'RetrieveTextFn',
     'ResourceFromContentsFn',
     'CacheFn',

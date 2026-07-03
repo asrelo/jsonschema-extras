@@ -1,11 +1,6 @@
 from collections.abc import Callable
 
 
-__all__ = (
-    'LoadTextFn',
-)
-
-
 #: Function to deserialize resource contents.
 #:
 #: Note:
