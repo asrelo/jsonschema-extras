@@ -29,9 +29,7 @@ Features
 
 * :doc:`Utilities for accessing schemas on a filesystem <./filesystem>`
 
-* :py:class:`~jsonschema_extras.registries.RetrieveFunctionsChain` –
-  chain of responsibility composed of retriever functions
-  (used to initialize :py:class:`referencing.Registry`).
+* :doc:`Other generally useful utilities <./misc>`
 
 Installation
 ------------
@@ -52,6 +50,7 @@ Install via pip:
    filesystem
    schemas
    formats
+   misc
 
 .. toctree::
    :maxdepth: 2
