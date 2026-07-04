@@ -3,20 +3,30 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+from csv import reader
 import pathlib
 import sys
 
+
 DOCS_SOURCE_PATH = pathlib.Path(__file__).parent
 assert DOCS_SOURCE_PATH.is_absolute()
+sys.path.insert(0, str(DOCS_SOURCE_PATH))
 
 PROJECT_ROOT = DOCS_SOURCE_PATH.parents[1]
 
 sys.path.insert(0, str(PROJECT_ROOT))
 
-with open(
-    (PROJECT_ROOT / 'jsonschema_extras' / 'VERSION'), 'rt', encoding='utf-8',
-) as file:
-    version_str = file.readline().strip()
+
+def _read_version_from_file(file):
+    return file.readline().strip()
+
+def _open_version_file(path):
+    return open(path, 'rt', encoding='utf-8')
+
+def _read_version_from_path(path):
+    with _open_version_file(path) as file:
+        return _read_version_from_file(file)
+
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -24,7 +34,7 @@ with open(
 project = 'jsonschema-extras'
 copyright = '2026 Viacheslav Syropiatov'
 author = 'Viacheslav Syropiatov'
-release = version_str
+release = _read_version_from_path(PROJECT_ROOT / 'jsonschema_extras' / 'VERSION')
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -46,11 +56,29 @@ exclude_patterns = [
 ]
 
 
+def _read_nitpick_ignore_regex_pairs_it_from_reader(reader):
+    for row in reader:
+        if ((len(row) == 1) and row[0].startswith('#')) or (len(row) != 2):
+            continue
+        yield tuple(row)
+
+def _read_nitpick_ignore_regex_from_file(file):
+    return list(_read_nitpick_ignore_regex_pairs_it_from_reader(reader(file)))
+
+def _open_nitpick_ignore_regex_file(path):
+    return open(path, 'rt', encoding='utf-8', newline='')
+
+def _read_nitpick_ignore_regex_from_path(path):
+    with _open_nitpick_ignore_regex_file(path) as file:
+        return _read_nitpick_ignore_regex_from_file(file)
+
+
 nitpicky = True
 nitpick_ignore_regex = [
     ('py:class', r'.*\.GenericAlias'),
-    ('py:class', 'D'),
-    ('py:.', 'jsonschema_extras.typing.D'),
+    *_read_nitpick_ignore_regex_from_path(
+        DOCS_SOURCE_PATH / 'nitpick_ignore_regex.csv'
+    ),
 ]
 
 
@@ -61,12 +89,45 @@ html_theme = 'furo'
 html_static_path = ['_static']
 
 
+def _read_alias_pairs_it_from_file(file):
+    for line in file:
+        line_strip = line.strip()
+        if (len(line_strip) == 0) or line_strip.startswith('#'):
+            continue
+        line_split = line_strip.split(':', 1)
+        assert len(line_split) <= 2
+        if len(line_split) < 2:
+            continue    # XXX: ...
+        yield tuple(e.strip() for e in line_split)
+
+def _read_aliases_from_file(file):
+    return dict(_read_alias_pairs_it_from_file(file))   # XXX: ...
+
+def _open_aliases_file(path):
+    return open(path, 'rt', encoding='utf-8')
+
+def _read_aliases_from_path(path):
+    with _open_aliases_file(path) as file:
+        return _read_aliases_from_file(file)
+
+def _read_aliases_from_path_optional(path):
+    try:
+        return _read_aliases_from_path(path)
+    except FileNotFoundError:
+        return {}
+
+
+TYPE_ALIASES = _read_aliases_from_path_optional(
+    DOCS_SOURCE_PATH / 'autodoc_type_aliases.txt'
+)
+
 autodoc_default_options = {
     'members': True,
     'undoc-members': True,
     'inherited-members': True,
     'show-inheritance': True,
 }
+autodoc_type_aliases = TYPE_ALIASES
 autodoc_typehints = 'description'
 
 apidoc_separate_modules = True

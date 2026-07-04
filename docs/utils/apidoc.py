@@ -56,6 +56,7 @@ def main_impl(unknown_flags, module_path, output_dir, exclude_patterns=()):
         'sphinx-apidoc',
         '--separate',
         '--module-first',
+        '--remove-old',
         *unknown_flags,
         '-o', str(output_dir), module_path,
         *EXCLUDE_PATTERNS, *exclude_patterns,

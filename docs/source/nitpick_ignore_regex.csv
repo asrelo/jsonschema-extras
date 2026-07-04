@@ -1,0 +1,2 @@
+py:.*,D
+py:.*,jsonschema_extras\.typing\.D
