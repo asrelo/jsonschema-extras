@@ -2,6 +2,7 @@
 max-line-length = 88
 extend-ignore =
     E203,
+    E265,
     W503,
     F405,
     C408,

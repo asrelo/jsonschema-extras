@@ -1,6 +1,8 @@
 Schemas
 =======
 
+:doc:`List of bundled schemas <./schemas/index>`
+
 To access bundled schemas within your project:
 
 1. Create a retrieval callable using
@@ -50,3 +52,9 @@ to combine multiple retrieval callables.
         )
         validator = Validator(your_schema, registry=registry)
         # use validator
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   schemas/index

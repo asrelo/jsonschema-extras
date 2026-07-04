@@ -1,15 +1,6 @@
-# flake8: noqa: E265
-
 from argparse import ArgumentParser
-from pathlib import Path
 import subprocess
 import sys
-
-
-DOCS_UTILS_PATH = Path(__file__).parent
-assert DOCS_UTILS_PATH.is_absolute()
-
-DOCS_PATH = DOCS_UTILS_PATH.parents[0]
 
 
 EXCLUDE_PATTERNS = [
@@ -38,7 +29,10 @@ def build_cli_args_parser(prog_name=None):
         '-d', '--maxdepth',
         type=int,
         default=TOC_DEPTH_MAX_DEFAULT,
-        help=f'maximum depth of submodules to show in the TOC (default: {TOC_DEPTH_MAX_DEFAULT!r})',
+        help=(
+            f'maximum depth of submodules to show in the TOC'
+            f' (default: {TOC_DEPTH_MAX_DEFAULT!r})'
+        ),
         metavar='MAX_DEPTH',
         dest='max_depth',
     )

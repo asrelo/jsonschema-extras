@@ -49,10 +49,12 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx_autodoc_typehints',
     'sphinx_copybutton',
+    #'sphinx-jsonschema',
 ]
 
 templates_path = ['_templates']
 exclude_patterns = [
+    'global.rst',
     '**/tests/*',
 ]
 
