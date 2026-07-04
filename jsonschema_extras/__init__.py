@@ -1,30 +1,17 @@
 """Utilities for working with the JSON Schema Python library
-[`jsonschema`](https://pypi.org/project/jsonschema/).
+`jsonschema <https://pypi.org/project/jsonschema/>`__.
 
-Some features:
+Features:
 
-- Specific schemas bundled with the library
+- :doc:`Schemas bundled with the library </schemas>`
 
-  To get access to bundled schemas within your project,
-  use :func:`bundled_schemas_retriever` to create a retrieval callable to use
-  when instantiating :class:`referencing.Registry`.
-  (You can use :class:`~jsonschema_extras.registries.RetrieveFunctionsChain`
-  to chain multiple retrivers.)
-  Then all bundled schemas will be available via the registry with the base URI
-  you passed to :func:`bundled_schemas_retriever`
-  (:data:`~BUNDLED_SCHEMAS_URI_BASE_DEFAULT` by default).
+- :doc:`Formats bundled with the library </formats>`
 
-- Specific formats bundled with the library
-  (along with convenience utilities for using them)
-
-  See :mod:`jsonschema_extras.formats` for usage instructions.
-
-- Utilities for accessing JSON-encoded schemas on a local filesystem
-  (:mod:`jsonschema_extras.registries.filesystem`).
+- :doc:`Utilities for accessing schemas on a filesystem </filesystem>`
 
 - :class:`~jsonschema_extras.registries.RetrieveFunctionsChain` -
-  chain of responsibility composed of retriever functions,
-  is used to initialize :class:`referencing.Registry`.
+  chain of responsibility composed of retriever functions
+  (used to initialize :class:`referencing.Registry`).
 """
 
 from collections.abc import Iterator
@@ -68,24 +55,24 @@ def bundled_schemas_retriever(
     open_buffering: int = -1,
     cache: CacheFn[Any] | CacheSpecDefault | None = None,
 ) -> Iterator[Retrieve]:
-    """Context manager producing a retrieval callable for this library's
+    """**Context manager** producing a retrieval callable for this library's
     bundled schemas.
 
     Warning:
-        The produced retriever is only valid within duration an explicit
+        The produced retriever is only valid within duration of an explicit
         lifecycle, hence the context manager.
 
     Args:
         uri_base (str):
-            Base URI for bundled schemas. Must have the scheme `file:`
+            Base URI for bundled schemas. Must have the scheme ``file:``
             and a path, **no** other components are allowed
             (i.e. **no** credentials, netloc, query, fragment).
             Default: :data:`BUNDLED_SCHEMAS_URI_BASE_DEFAULT`.
         cache (CacheFn | CacheSpecDefault, optional):
             Caching decorator for :class:`~referencing.typing.Retrieve`,
-            or `'default'` to use the default caching implementation
+            or ``'default'`` to use the default caching implementation
             (see description of :mod:`jsonschema_extras.registries.retrieval`
-            for details). Defaults to `None`, meaning no caching.
+            for details). Defaults to ``None``, meaning no caching.
         open_buffering (int, optional):
             Optional integer used to set the buffering policy.
             See the Python built-in function :func:`open`.

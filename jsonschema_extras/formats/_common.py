@@ -47,12 +47,12 @@ def register_func_in_checker(
     Utility function working with :class:`FormatCheckingFuncInfo`.
 
     Args:
-        checker (jsonschema.FormatChecker): A `format` property checker.
+        checker (jsonschema.FormatChecker): A ``format`` property checker.
         func_info (FormatCheckingFuncInfo):
             Data needed to register a format checking function.
 
     Returns:
-        `func_info.func`
+        ``func_info.func``
     """
     return checker.checks(func_info.format, func_info.raises)(func_info.func)
 
@@ -64,11 +64,11 @@ def register_funcs_in_checker(
     in a :class:`~jsonschema.FormatChecker`.
 
     Args:
-        checker (jsonschema.FormatChecker): A `format` property checker.
+        checker (jsonschema.FormatChecker): A ``format`` property checker.
         funcs_info (Iterable[FormatCheckingFuncInfo]):
             Instances of data needed to register formatt checking functions.
 
     Returns:
-        sequence of `func_info.func` objects
+        sequence of ``func_info.func`` objects
     """
     return [register_func_in_checker(checker, func_info) for func_info in funcs_info]

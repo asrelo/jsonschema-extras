@@ -2,9 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "file:/jsonschema_extras/schemas/common/range.json",
   "title": "Numbers range",
+  "description": "Represents a numeric range defined by a minimum and maximum value. The array must contain exactly two numbers where the first element is the lower bound and the second is the upper bound.",
   "type": "array",
   "format": "numbers-range",
   "minItems": 2,
   "maxItems": 2,
-  "prefixItems": [{ "type": "number" }, { "type": "number" }]
+  "prefixItems": [
+    { "type": "number", "title": "Minimum value" },
+    { "type": "number", "title": "Maximum value" }
+  ]
 }

@@ -1,4 +1,4 @@
-"""Utilities for accessing JSON-encoded schemas on a local filesystem.
+"""Utilities for accessing schemas on a local filesystem.
 
 Functions in this module match up a path to a directory on a filesystem
 (root of local schemas hierarchy) with a base URI for schemas. When retrieving
@@ -7,9 +7,9 @@ base URI and use it as a path relative to the specified filesystem root path
 to locate the schema file.
 
 Both the base URI and specific schema URIs are **restricted**:
-each must have the scheme `file:` and a path, **no** other components
+each must have the scheme ``file:`` and a path, **no** other components
 are allowed (i.e. **no** credentials, netloc, query, fragment).
-"Parent" segments `..` in the path of a schema URI are prohibited.
+"Parent" segments ``..`` in the path of a schema URI are prohibited.
 All of the above properties are validated by this module's functions.
 """
 
@@ -66,8 +66,8 @@ def split_and_validate_uri_base(uri_base: str) -> SplitResult:
 
 # XXX: !?
 class NoSuchResourceFromValueError(ValueError):
-    """ValueError in a schema's URI that should be interpreted as absence
-    of the resource.
+    """:exc:`ValueError` in a schema's URI that should be interpreted
+    as absence of the resource.
     """
 
 
@@ -122,12 +122,12 @@ def file_path_from_uri_by_base(
         uri (str):  URI of the schema to retrieve.
             Should be relative to `uri_base`,
             otherwise :exc:`~referencing.exceptions.NoSuchResource` is raised.
-            Must have the scheme `file:` and a path
-            (with no "parent" segments `..`), **no** other components
+            Must have the scheme ``file:`` and a path
+            (with no "parent" segments ``..``), **no** other components
             are allowed (i.e. **no** credentials, netloc, query, fragment).
         uri_base (str):
             Base URI corresponding to the filesystem root.
-            Must have the scheme `file:` and a path, **no** other components
+            Must have the scheme ``file:`` and a path, **no** other components
             are allowed (i.e. **no** credentials, netloc, query, fragment).
         path (str | PathLike[str]):
             Root filesystem path containing the schemas.
@@ -198,19 +198,19 @@ def retrieve_text_from_filesystem(
         uri (str):  URI of the schema to retrieve.
             Should be relative to `uri_base`,
             otherwise :exc:`~referencing.exceptions.NoSuchResource` is raised.
-            Must have the scheme `file:` and a path
-            (with no "parent" segments `..`), **no** other components
+            Must have the scheme ``file:`` and a path
+            (with no "parent" segments ``..``), **no** other components
             are allowed (i.e. **no** credentials, netloc, query, fragment).
         uri_base (str):
             Base URI corresponding to the filesystem root.
-            Must have the scheme `file:` and a path, **no** other components
+            Must have the scheme ``file:`` and a path, **no** other components
             are allowed (i.e. **no** credentials, netloc, query, fragment).
         path (str | PathLike[str]):
             Root filesystem path containing the schemas.
         open_kwargs (Mapping[str, Any], optional):
             Keyword arguments to pass to Python built-in function :func:`open`.
-            Allowed arguments: `buffering`, `encoding` (default: `'utf-8'`),
-            `errors`, `newline`.
+            Allowed arguments: ``buffering``,
+            ``encoding`` (default: ``'utf-8'``), ``errors``, ``newline``.
 
     Returns:
         Text (serialized representation) of the schema loaded
@@ -228,9 +228,9 @@ def retrieve_text_from_filesystem(
             than it was not found. Passed through from the Python built-in
             function :func:`open`.
         ValueError:
-            - On invalid `uri` or `uri_base`.
-            - If there was an encoding error when reading the file.
-                Passed through from the Python built-in function :func:`open`.
+            On invalid `uri` or `uri_base`.
+            **OR** If there was an encoding error when reading the file
+            (passed through from the Python built-in function :func:`open`).
         TypeError:
             If there are arguments in `open_kwargs` other than allowed
             arguments.
@@ -258,19 +258,19 @@ def build_schemas_from_filesystem_retriever(
     Args:
         uri_base (str):
             Base URI corresponding to the filesystem root.
-            Must have the scheme `file:` and a path, **no** other components
+            Must have the scheme ``file:`` and a path, **no** other components
             are allowed (i.e. **no** credentials, netloc, query, fragment).
         path (str | PathLike[str]):
             Root filesystem path containing the schemas.
         open_kwargs (Mapping[str, Any], optional):
             Keyword arguments to pass to Python built-in function :func:`open`.
-            Allowed arguments: `buffering`, `encoding` (default: `'utf-8'`),
-            `errors`, `newline`.
+            Allowed arguments: ``buffering``,
+            ``encoding`` (default: ``'utf-8'``), ``errors``, ``newline``.
         cache (CacheFn | CacheSpecDefault, optional):
             Caching decorator for :class:`~referencing.typing.Retrieve`,
-            or `'default'` to use the default caching implementation
+            or ``'default'`` to use the default caching implementation
             (see description of :mod:`jsonschema_extras.registries.retrieval`
-            for details). Defaults to `None`, meaning no caching.
+            for details). Defaults to ``None``, meaning no caching.
         loads (LoadTextFn, optional):
             Function to deserialize resource contents (for example,
             JSON data structure from JSON string).

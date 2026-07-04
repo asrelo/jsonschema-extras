@@ -2,7 +2,7 @@
 
 For the default implementation of resource caching,
 see :func:`referencing.retrieval.to_cached_resource`.
-It uses `lru_cache(maxsize=None)` as of version 0.37 .
+It uses ``lru_cache(maxsize=None)`` as of version 0.37 .
 """
 
 from collections.abc import Callable
@@ -119,9 +119,9 @@ def to_cached_resource(
     Args:
         cache (CacheFn[D], optional):
             Caching decorator for :class:`~referencing.typing.Retrieve`,
-            or `None` to use the default caching implementation
+            or ``None`` to use the default caching implementation
             (see :func:`referencing.retrieval.to_cached_resource`).
-            Defaults to `None`.
+            Defaults to ``None``.
         loads (LoadTextFn, optional):
             Function to deserialize resource contents (for example,
             JSON data structure from JSON string).
@@ -155,9 +155,9 @@ def to_maybe_cached_resource(
     Args:
         cache (CacheFn[D] | CacheSpecDefault, optional):
             Caching decorator for :class:`~referencing.typing.Retrieve`,
-            or `'default'` to use the default caching implementation
+            or ``'default'`` to use the default caching implementation
             (see :func:`referencing.retrieval.to_cached_resource`).
-            Defaults to `None`, meaning no caching.
+            Defaults to ``None``, meaning no caching.
         loads (LoadTextFn, optional):
             Function to deserialize resource contents (for example,
             JSON data structure from JSON string).

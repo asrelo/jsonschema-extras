@@ -3,5 +3,10 @@
   "$id": "file:/jsonschema_extras/schemas/common/range_integer.json",
   "$ref": "range.json",
   "title": "Integer range",
-  "prefixItems": [{ "type": "integer" }, { "type": "integer" }]
+  "description": "A range defined by minimum and maximum integer boundaries",
+  "examples": [[0, 100], [-50, 50], [1, 1000]],
+  "prefixItems": [
+    { "type": "integer", "title": "Minimum value" },
+    { "type": "integer", "title": "Maximum value" }
+  ]
 }

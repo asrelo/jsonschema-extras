@@ -6,6 +6,9 @@ from ._common import LoadTextFn
 
 
 def schema_data_from_json_text(text: str, *, loads_kwargs: Kwargs | None = None) -> Any:
+    '''Deserialize a schema from JSON text
+
+    Satisfies :type:`.LoadTextFn`.'''
     if loads_kwargs is None:
         loads_kwargs = {}
     return json.loads(text, **loads_kwargs)

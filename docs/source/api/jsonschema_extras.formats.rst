@@ -10,7 +10,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    jsonschema_extras.formats.numbers_range
    jsonschema_extras.formats.slice_string

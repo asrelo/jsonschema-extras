@@ -2,11 +2,28 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "file:/jsonschema_extras/schemas/common/slice_object.json",
   "title": "Slice object",
+  "description": "Represents a slice notation for selecting a range of elements, similar to Python's slice(start, stop, step) syntax. All properties are optional.",
   "type": "object",
   "properties": {
-    "start": { "type": "integer" },
-    "stop": { "type": "integer" },
-    "step": { "type": "integer" }
+    "start": {
+      "type": "integer",
+      "description": "The starting index of the slice (inclusive). If omitted, defaults to the beginning of the sequence."
+    },
+    "stop": {
+      "type": "integer",
+      "description": "The ending index of the slice (exclusive). If omitted, defaults to the end of the sequence."
+    },
+    "step": {
+      "type": "integer",
+      "description": "The increment between elements. Negative values reverse the direction.",
+      "default": 1
+    }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "examples": [
+    { "start": 0, "stop": 10, "step": 1 },
+    { "start": 5, "stop": 15 },
+    { "start": 0, "step": 2 },
+    { "stop": 10 }
+  ]
 }

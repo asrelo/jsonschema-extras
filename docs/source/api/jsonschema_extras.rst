@@ -10,7 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    jsonschema_extras.formats
    jsonschema_extras.registries
@@ -19,6 +19,6 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    jsonschema_extras.typing

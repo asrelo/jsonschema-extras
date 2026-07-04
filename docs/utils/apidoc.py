@@ -17,6 +17,9 @@ EXCLUDE_PATTERNS = [
 ]
 
 
+TOC_DEPTH_MAX_DEFAULT = 2
+
+
 def build_cli_args_parser(prog_name=None):
     argument_parser_kwargs_extra = {}
     if prog_name is not None:
@@ -30,6 +33,14 @@ def build_cli_args_parser(prog_name=None):
         add_help=True,
         exit_on_error=True,
         **argument_parser_kwargs_extra,
+    )
+    parser.add_argument(
+        '-d', '--maxdepth',
+        type=int,
+        default=TOC_DEPTH_MAX_DEFAULT,
+        help=f'maximum depth of submodules to show in the TOC (default: {TOC_DEPTH_MAX_DEFAULT!r})',
+        metavar='MAX_DEPTH',
+        dest='max_depth',
     )
     parser.add_argument('module_path', help='path to module to document')
     parser.add_argument(
@@ -51,10 +62,15 @@ def parse_known_cli_args(parser, argv_trunc):
     return parser.parse_known_args(argv_trunc)
 
 
-def main_impl(unknown_flags, module_path, output_dir, exclude_patterns=()):
+def main_impl(
+    unknown_flags, module_path, output_dir, exclude_patterns=(),
+    *, toc_depth_max: int = TOC_DEPTH_MAX_DEFAULT,
+):
     apidoc_argv = [
         'sphinx-apidoc',
+        '-d', str(toc_depth_max),
         '--separate',
+        '--no-toc',  # XXX: ?
         '--module-first',
         '--remove-old',
         *unknown_flags,

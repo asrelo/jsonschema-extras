@@ -3,6 +3,7 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+from collections.abc import Iterator
 from csv import reader
 import pathlib
 import sys
@@ -47,13 +48,18 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx_autodoc_typehints',
-    #'sphinx_copybutton',
+    'sphinx_copybutton',
 ]
 
 templates_path = ['_templates']
 exclude_patterns = [
     '**/tests/*',
 ]
+
+
+rst_prolog = '''
+.. include:: /global.rst
+'''
 
 
 def _read_nitpick_ignore_regex_pairs_it_from_reader(reader):
@@ -89,7 +95,7 @@ html_theme = 'furo'
 html_static_path = ['_static']
 
 
-def _read_alias_pairs_it_from_file(file):
+def _read_alias_pairs_it_from_file(file) -> Iterator[tuple[str, str]]:
     for line in file:
         line_strip = line.strip()
         if (len(line_strip) == 0) or line_strip.startswith('#'):
@@ -124,7 +130,7 @@ TYPE_ALIASES = _read_aliases_from_path_optional(
 autodoc_default_options = {
     'members': True,
     'undoc-members': True,
-    'inherited-members': True,
+    #'inherited-members': True,
     'show-inheritance': True,
 }
 autodoc_type_aliases = TYPE_ALIASES
@@ -142,6 +148,9 @@ intersphinx_mapping = {
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
+
+copybutton_prompt_text = r'>>> |\.\.\. |\$'
+copybutton_prompt_is_regexp = True
 
 
 def skip_namedtuple_attributes(app, obj_type, name, obj, skip, options):
