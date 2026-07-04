@@ -48,7 +48,7 @@ __all__ = (
 
 
 def bundled_schemas_files() -> Traversable:
-    """Returns a :class:`~importlib.abc.Traversable` object
+    """Returns a :class:`~importlib.resources.abc.Traversable` object
     containing resources for bundled schemas.
 
     Built upon :func:`importlib.resources.files`.
