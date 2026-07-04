@@ -7,9 +7,11 @@ from typing import cast
 import warnings
 from warnings import catch_warnings, warn
 
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
 from docs.utils.common import purge_directory
 
-from .common._meta import PROJECT_PATH, DOCS_SOURCE_PATH
+from .common._meta import PROJECT_PATH, DOCS_SOURCE_PATH, DOCS_TEMPLATES_PATH
 from .common.rst import escape_rst
 
 
@@ -25,7 +27,42 @@ INDEX_DOC_NAME_DEFAULT = PurePosixPath('index')
 
 TITLE_FALLBACK_NONE = '(unknown)'
 
-INDENT = '   '  # XXX: ?
+
+def jinja_filter_to_pretty_json(obj, indent=2):
+    return json.dumps(obj, indent=indent, ensure_ascii=False)
+
+
+class _JinjaEnvironmentManager:
+
+    def __init__(self):
+        self._env = None
+
+    @classmethod
+    def create_env(cls, *, templates_path=None):
+        if templates_path is None:
+            templates_path = DOCS_TEMPLATES_PATH
+        env = Environment(
+            loader=FileSystemLoader([templates_path]),
+            autoescape=select_autoescape(['html', 'xml']),
+            trim_blocks=True,
+            lstrip_blocks=True,
+            keep_trailing_newline=True,
+        )
+        env.filters['escape_rst'] = escape_rst
+        env.filters['to_pretty_json'] = jinja_filter_to_pretty_json
+        return env
+
+    def init(self, *, templates_path=None):
+        self._env = self.create_env(templates_path=templates_path)
+
+    def get(self):
+        if self._env is None:
+            self.init()
+        assert self._env is not None
+        return self._env
+
+
+jinja_env_manager = _JinjaEnvironmentManager()
 
 
 def read_schema_from_file(file):
@@ -63,72 +100,21 @@ def generate_doc_for_schema(schema, *, title_fallback=None):
     if title_fallback is None:
         # XXX: ?
         title_fallback = TITLE_FALLBACK_NONE
-    title = schema.get('title', title_fallback)
-    lines: list[str] = []
-    lines.extend((escape_rst(title), ('=' * len(title)), ''))
-    if schema.get('deprecated', False):
-        lines.extend(['.. warning::', (INDENT + 'This schema is deprecated.'), ''])
-    metadata_items = []
-    if (id_ := schema.get('$id')) is not None:
-        metadata_items.append(f"**ID:** ``{id_}``")  # XXX: !?
-    #if (schema_uri := schema.get('$schema')) is not None:
-    #    metadata_items.append(f"**Spec:** ``{schema_uri}``")   # XXX: !?
-    if len(metadata_items) > 0:
-        lines.extend([*metadata_items, ''])
-    if (description := schema.get('description')) is not None:
-        lines.extend((escape_rst(description), ''))
-    examples = schema.get('examples', [])
-    if len(examples := schema.get('examples', ())) > 0:
-        examples_title = 'Examples'
-        lines.extend((examples_title, ('-' * len(examples_title)), ''))
-        for example in examples:
-            # XXX: ?
-            example_json = json.dumps(example, indent=2, ensure_ascii=False)
-            example_json_lines = example_json.split('\n')
-            lines.extend([
-                '.. code-block:: json',
-                '',
-                *(
-                    ((INDENT + line) if (len(line.strip()) > 0) else '')
-                    for line in example_json_lines
-                ),
-                '',
-            ])
-    if (len(lines) > 0) and (len(lines[-1].strip()) != 0):
-        lines.append('')
-    return ('\n'.join(lines), title)
-
-
-def _make_title_for_doc_in_toc(name, title):
-    # NOTE: great, reStructuredText does not support inline formatting in TOC entries
-    return (
-        #f'{name} \u2014 {escape_rst(title)}'
-        name
-    )
+    d = {}
+    d['schema'] = schema
+    d['title'] = (title := schema.get('title', title_fallback))
+    d['schema_id'] = schema.get('$id')
+    d['schema_uri'] = schema.get('$schema')
+    env = jinja_env_manager.get()
+    template = env.get_template('schemas/schema.rst.j2')
+    doc = template.render(**d)
+    return (doc, title)
 
 
 def generate_index_doc(docs_info):
-    lines = []
-    title = 'Bundled schemas'
-    lines.extend([
-        title,
-        ('=' * len(title)),
-        '',
-        '.. toctree::',
-        (INDENT + ':maxdepth: 1'),
-        '',
-        *(
-            (
-                INDENT
-                + f'{_make_title_for_doc_in_toc(doc_name, doc_title)} <{doc_name}>'
-            )
-            for doc_name, doc_title in docs_info
-        ),  # XXX: ?
-        '',
-    ])
-    if (len(lines) > 0) and (len(lines[-1].strip()) != 0):
-        lines.append('')
-    return '\n'.join(lines)
+    env = jinja_env_manager.get()
+    template = env.get_template('schemas/index.rst.j2')
+    return template.render({'docs_info': docs_info})
 
 
 def main_impl_resolve_and_make_output_path(output_path=None):
@@ -275,6 +261,16 @@ def build_cli_args_parser(prog_name=None):
         help='purge the output_path directory before generating',
         dest='do_purge',
     )
+    parser.add_argument(
+        '--templates',
+        type=Path,
+        help=(
+            'path to templates directory (default: {0})'
+            .format(DOCS_TEMPLATES_PATH.relative_to(PROJECT_PATH))
+        ),
+        metavar='PATH',
+        dest='templates_path',
+    )
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet')
     return parser
 
@@ -300,6 +296,7 @@ def main(argv):  # noqa: C901
                 file=sys.stderr,
             )
             return 2
+    jinja_env_manager.init(templates_path=args.templates_path)
     error_occured = False
     with catch_warnings(record=True) as warns:
         warnings.simplefilter('always', NoSchemaFilesFoundWarning)

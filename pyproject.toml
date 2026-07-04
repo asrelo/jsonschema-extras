@@ -48,6 +48,7 @@ dev = [
     "flake8-isort ~=7.0",
     "flake8-quotes ~=3.4",
     "furo >=2025.12.19",
+    "Jinja2 ~=3.1",
     "mypy ~=2.1",
     "pep8-naming ~=0.15.0",
     "pytest ~=9.0",
@@ -56,6 +57,7 @@ dev = [
     "sphinx-copybutton ~=0.5.2",
     # XXX: sphinx-jsonschema is good but incomplete
     #"sphinx-jsonschema >=1.19.2,<2",
+    "types-Jinja2",
 ]
 
 [tool.setuptools.package-data]

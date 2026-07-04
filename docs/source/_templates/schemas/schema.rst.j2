@@ -1,0 +1,25 @@
+{{ title }}
+{{ '=' * title|length }}
+
+{% if schema.deprecated %}
+.. warning::
+   This schema is deprecated.
+
+{% endif %}
+**ID:** ``{{ schema_id }}``
+
+{% if schema.description %}
+{{ schema.description|escape_rst }}
+
+{% endif %}
+{% if schema.examples %}
+Examples
+--------
+
+{% for example in schema.examples %}
+.. code-block:: json
+
+{{ example|to_pretty_json|indent(3, true) }}
+
+{% endfor %}
+{% endif %}

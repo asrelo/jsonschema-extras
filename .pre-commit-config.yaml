@@ -29,4 +29,5 @@ repos:
           - "--config-file=.mypy-precommit.ini"
         additional_dependencies:
           - "pytest"
+          - "types-Jinja2"
           - "types-jsonschema"
