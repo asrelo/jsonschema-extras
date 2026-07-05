@@ -23,26 +23,28 @@ A range defined by minimum and maximum integer boundaries
 Examples
 ^^^^^^^^
 
-.. code-block:: json
+.. dropdown:: Examples
 
-   [
-     0,
-     100
-   ]
+   .. code-block:: json
 
-.. code-block:: json
+      [
+        0,
+        100
+      ]
 
-   [
-     -50,
-     50
-   ]
+   .. code-block:: json
 
-.. code-block:: json
+      [
+        -50,
+        50
+      ]
 
-   [
-     1,
-     1000
-   ]
+   .. code-block:: json
+
+      [
+        1,
+        1000
+      ]
 
 
 
@@ -56,33 +58,35 @@ Represents a slice notation for selecting a range of elements, similar to Python
 Examples
 ^^^^^^^^
 
-.. code-block:: json
+.. dropdown:: Examples
 
-   {
-     "start": 0,
-     "stop": 10,
-     "step": 1
-   }
+   .. code-block:: json
 
-.. code-block:: json
+      {
+        "start": 0,
+        "stop": 10,
+        "step": 1
+      }
 
-   {
-     "start": 5,
-     "stop": 15
-   }
+   .. code-block:: json
 
-.. code-block:: json
+      {
+        "start": 5,
+        "stop": 15
+      }
 
-   {
-     "start": 0,
-     "step": 2
-   }
+   .. code-block:: json
 
-.. code-block:: json
+      {
+        "start": 0,
+        "step": 2
+      }
 
-   {
-     "stop": 10
-   }
+   .. code-block:: json
+
+      {
+        "stop": 10
+      }
 
 
 
@@ -96,20 +100,40 @@ A string representing a slice operation in Python notation. Supports start:stop:
 Examples
 ^^^^^^^^
 
-*(shown only 4 out of 9 examples in the schema)*
+.. dropdown:: Examples
 
-.. code-block:: json
+   .. code-block:: json
 
-   "1:10"
+      "1:10"
 
-.. code-block:: json
+   .. code-block:: json
 
-   ":10"
+      ":10"
 
-.. code-block:: json
+   .. code-block:: json
 
-   "1:"
+      "1:"
 
-.. code-block:: json
+   .. code-block:: json
 
-   "::2"
+      "::2"
+
+   .. code-block:: json
+
+      "1:10:2"
+
+   .. code-block:: json
+
+      "-5:"
+
+   .. code-block:: json
+
+      ":-5"
+
+   .. code-block:: json
+
+      "0:100:5"
+
+   .. code-block:: json
+
+      "-10:-2:1"

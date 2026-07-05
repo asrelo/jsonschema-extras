@@ -55,6 +55,7 @@ dev = [
     "sphinx ~=9.0",
     "sphinx-autodoc-typehints ~=3.10",
     "sphinx-copybutton ~=0.5.2",
+    'sphinx-design ~=0.7.0',
     # XXX: sphinx-jsonschema is good but incomplete
     #"sphinx-jsonschema >=1.19.2,<2",
     "types-Jinja2",

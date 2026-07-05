@@ -1,6 +1,6 @@
 {% from '_global.j2' import heading %}
 {% set base_level = base_level|default(1) %}
-{% set examples_num_max = examples_num_max|default(none) %}
+{% set compact = compact|default(false) %}
 
 {{ heading(title, base_level) }}
 
@@ -16,22 +16,17 @@
 
 {% endif %}
 {% if schema.examples %}
-{% set examples_to_show =
-  schema.examples[:examples_num_max]
-  if examples_num_max
-  else schema.examples
-%}
 {{ heading('Examples', (base_level + 1)) }}
 
-{# TODO: proper expandable layout #}
-{% if examples_to_show|length < schema.examples|length %}
-*(shown only {{ examples_to_show|length }} out of {{ schema.examples|length }} examples in the schema)*
-
+.. dropdown:: Examples
+{% if not compact %}
+   :open:
 {% endif %}
-{% for example in examples_to_show %}
-.. code-block:: json
 
-{{ example|to_pretty_json|indent(3, true) }}
+{% for example in schema.examples %}
+   .. code-block:: json
+
+{{ example|to_pretty_json|indent(6, true) }}
 
 {% endfor %}
 {% endif %}

@@ -1,3 +1,5 @@
+# TODO: use something like "fractured JSON" for examples (pretty but fairly compact)
+
 from argparse import ArgumentParser
 from collections.abc import Iterable, Sequence
 from enum import StrEnum
@@ -25,9 +27,6 @@ class LayoutMode(StrEnum):
 
 
 LAYOUT_MODE_DEFAULT = LayoutMode.SINGLE
-
-
-LAYOUT_SINGLE_EXAMPLES_NUM_MAX = 4
 
 
 SCHEMAS_REL_PATH_DEFAULT = PurePath('jsonschema_extras') / 'schemas'
@@ -131,13 +130,10 @@ def _build_schema_template_params(schema, *, title_fallback=None):
     return (d, title)
 
 
-def generate_doc_for_schema(
-    schema, *, title_fallback=None, examples_num_max=None, jinja_env=None,
-):
+def generate_doc_for_schema(schema, *, title_fallback=None, jinja_env=None):
     if jinja_env is None:
         jinja_env = jinja_env_manager.get()
     d, title = _build_schema_template_params(schema, title_fallback=title_fallback)
-    d['examples_num_max'] = examples_num_max
     template = jinja_env.get_template('schemas/schema.rst.j2')
     doc = template.render(**d)
     return (doc, title)
@@ -164,9 +160,7 @@ def _build_schema_template_params_from_schemas_all_entry(schema_entry):
     return (doc, doc_name)
 
 
-def generate_doc_for_schemas_all(
-    schema_entries, *, examples_num_max=None, jinja_env=None,
-):
+def generate_doc_for_schemas_all(schema_entries, *, jinja_env=None):
     if jinja_env is None:
         jinja_env = jinja_env_manager.get()
     schemas_params_and_doc_names = [
@@ -177,10 +171,7 @@ def generate_doc_for_schemas_all(
         schema_params['schema_id']: (schema_params, doc_name)
         for schema_params, doc_name in schemas_params_and_doc_names
     }
-    d = {
-        'schemas': schema_params_and_doc_names_by_schema_id,
-        'examples_num_max': examples_num_max,
-    }
+    d = {'schemas': schema_params_and_doc_names_by_schema_id}
     template = jinja_env.get_template('schemas/schemas_all.rst.j2')
     return template.render(**d)
 
@@ -242,8 +233,7 @@ class SchemaProcessingError(Exception):
 
 
 def main_impl_schema_docs_multi(
-    schemas_path=None, output_path=None,
-    *, examples_num_max=None, jinja_env=None,
+    schemas_path=None, output_path=None, *, jinja_env=None,
 ):
     schemas_path = main_impl_resolve_schemas_path(schemas_path)
     schema_file_paths = main_impl_get_schema_file_paths(schemas_path)
@@ -258,7 +248,6 @@ def main_impl_schema_docs_multi(
             doc, doc_title = generate_doc_for_schema(
                 schema,
                 title_fallback=doc_title_from_schema_filename(schema_relpath.name),
-                examples_num_max=examples_num_max,
                 jinja_env=jinja_env,
             )
             doc_path.parent.mkdir(parents=True, exist_ok=True)
@@ -295,7 +284,7 @@ class DocForSchemasAllProcessingError(Exception):
 
 def main_impl_schema_docs_single(
     schemas_path=None, output_path=None,
-    *, index_doc_name=INDEX_DOC_NAME_DEFAULT, examples_num_max=None, jinja_env=None,
+    *, index_doc_name=INDEX_DOC_NAME_DEFAULT, jinja_env=None,
 ):
     schemas_path = main_impl_resolve_schemas_path(schemas_path)
     schema_file_paths = main_impl_get_schema_file_paths(schemas_path)
@@ -318,8 +307,7 @@ def main_impl_schema_docs_single(
             schema_entries_for_doc.append(schema_entry_for_doc)
     try:
         doc = generate_doc_for_schemas_all(
-            schema_entries_for_doc,
-            examples_num_max=examples_num_max, jinja_env=jinja_env,
+            schema_entries_for_doc, jinja_env=jinja_env,
         )
         doc_path = output_path / PurePath(index_doc_name).with_suffix('.rst')
         doc_path.parent.mkdir(parents=True, exist_ok=True)
@@ -361,9 +349,6 @@ def _validate_cli_examples_num_max(s):
     if val < 0:
         raise ValueError('examples-num-max must be non-negative')
     return val
-
-
-_CLI_NO_EXAMPLES_NUM_MAX_SENTINEL = object()
 
 
 def build_cli_args_parser(prog_name=None):
@@ -435,29 +420,6 @@ def build_cli_args_parser(prog_name=None):
         metavar='PATH',
         dest='templates_path',
     )
-    parser_examples_num_max = parser.add_mutually_exclusive_group()
-    parser_examples_num_max.add_argument(
-        '--examples-num-max',
-        type=_validate_cli_examples_num_max,
-        help=(
-            f'maximum number of examples for each schema'
-            f' (default: by layout, single: {LAYOUT_SINGLE_EXAMPLES_NUM_MAX},'
-            f' multi: no restriction)'
-            f' (see also --no-examples-num-max)'
-        ),
-        metavar='NUM',
-        dest='examples_num_max',
-    )
-    parser_examples_num_max.add_argument(
-        '--no-examples-num-max',
-        action='store_const',
-        const=_CLI_NO_EXAMPLES_NUM_MAX_SENTINEL,
-        help=(
-            'disable restriction on the number of examples for each schema'
-            ' (see --examples-num-max)'
-        ),
-        dest='examples_num_max',
-    )
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet')
     return parser
 
@@ -465,8 +427,6 @@ def build_cli_args_parser(prog_name=None):
 def parse_cli_args(parser, argv_trunc):
     args = parser.parse_args(argv_trunc)
     args.layout_mode = LayoutMode(args.layout_mode)
-    if (args.layout_mode == LayoutMode.SINGLE) and (args.examples_num_max is None):
-        args.examples_num_max = LAYOUT_SINGLE_EXAMPLES_NUM_MAX
     return args
 
 
@@ -501,7 +461,6 @@ def main(argv):  # noqa: C901
                         docs_num, docs_err_group = main_impl_schema_docs_single(
                             args.input_path, args.output_path,
                             index_doc_name=index_doc_name,
-                            examples_num_max=args.examples_num_max,
                         )
                     except DocForSchemasAllProcessingError as err:
                         docs_num = 0
@@ -521,7 +480,6 @@ def main(argv):  # noqa: C901
                 case LayoutMode.MULTI:
                     docs_info, docs_err_group = main_impl_schema_docs_multi(
                         args.input_path, args.output_path,
-                        examples_num_max=args.examples_num_max,
                     )
                     docs_num = len(docs_info)
                 case _:
