@@ -9,9 +9,7 @@ Features:
 
 - :doc:`Utilities for accessing schemas on a filesystem </filesystem>`
 
-- :class:`~jsonschema_extras.registries.RetrieversChain` -
-  chain of responsibility composed of retriever functions
-  (used to initialize :class:`referencing.Registry`).
+- :doc:`Other generally useful utilities </misc>`
 """
 
 from collections.abc import Iterator
@@ -29,7 +27,7 @@ from .registries.retrieval.json import LOADS_FN_JSON_DEFAULT
 
 __all__ = (
     'bundled_schemas_files',
-    'BUNDLED_SCHEMAS_URI_BASE_DEFAULT',
+    'BUNDLED_SCHEMAS_URI_BASE',
     'bundled_schemas_retriever',
 )
 
@@ -43,17 +41,18 @@ def bundled_schemas_files() -> Traversable:
     return (importlib.resources.files('jsonschema_extras') / 'schemas')
 
 
-#: Default base URI for schemas bundled with this library.
-BUNDLED_SCHEMAS_URI_BASE_DEFAULT: Final[str] = 'file:/jsonschema_extras/schemas'
+#: Base URI for schemas bundled with this library.
+#:
+#: See Also:
+#:     :func:`bundled_schemas_retriever`
+BUNDLED_SCHEMAS_URI_BASE: Final[str] = 'file:/jsonschema_extras/schemas'
 
 _BUNDLED_SCHEMAS_ENCODING: Final = 'utf-8'
 
 
 @contextmanager
 def bundled_schemas_retriever(
-    *, uri_base: str = BUNDLED_SCHEMAS_URI_BASE_DEFAULT,
-    open_buffering: int = -1,
-    cache: CacheFn[Any] | CacheSpecDefault | None = None,
+    *, open_buffering: int = -1, cache: CacheFn[Any] | CacheSpecDefault | None = None,
 ) -> Iterator[Retrieve]:
     """**Context manager** producing a retrieval callable for this library's
     bundled schemas.
@@ -63,11 +62,6 @@ def bundled_schemas_retriever(
         lifecycle, hence the context manager.
 
     Args:
-        uri_base (str):
-            Base URI for bundled schemas. Must have the scheme ``file:``
-            and a path, **no** other components are allowed
-            (i.e. **no** credentials, netloc, query, fragment).
-            Default: :data:`BUNDLED_SCHEMAS_URI_BASE_DEFAULT`.
         cache (CacheFn | CacheSpecDefault, optional):
             Caching decorator for :class:`~referencing.typing.Retrieve`,
             or ``'default'`` to use the default caching implementation
@@ -92,7 +86,7 @@ def bundled_schemas_retriever(
     """
     with importlib.resources.as_file(bundled_schemas_files()) as bundled_schemas_path:
         yield build_schemas_from_filesystem_retriever(
-            uri_base,
+            BUNDLED_SCHEMAS_URI_BASE,
             bundled_schemas_path,
             open_kwargs=dict(
                 buffering=open_buffering, encoding=_BUNDLED_SCHEMAS_ENCODING,

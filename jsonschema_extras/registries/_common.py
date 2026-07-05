@@ -1,10 +1,17 @@
 from collections.abc import Callable, Collection, Iterable
 from typing import Generic
+from urllib.parse import urlunsplit
 
 from referencing import Resource
 from referencing.exceptions import NoSuchResource
 from referencing.typing import Retrieve
 
+from jsonschema_extras._util.uri import (
+    RPURIBNotRelativeValueError,
+    rpurib_split_and_validate_uri,
+    rpurib_split_and_validate_uri_base,
+    translate_uri_base_splits_validated,
+)
 from jsonschema_extras.typing import D
 
 
@@ -25,7 +32,7 @@ class RetrieversChain(list[Retrieve[D]], Generic[D]):
     On retrieval failure, provides detailed cause info.
 
     Parameters:
-        *retrievers (Retrieve[D]):
+        retrievers (Iterable[Retrieve[D]]):
             Retriever objects that implement
             :class:`referencing.typing.Retrieve`.
         postpone_excs (Collection[type[BaseException]], optional):
@@ -126,3 +133,78 @@ class RetrieversChain(list[Retrieve[D]], Generic[D]):
             excs,
         )
         raise NoSuchResource(uri) from exc_group
+
+
+class _RetrievalURITranslatorImpl(Generic[D]):
+
+    def __init__(self, retrieve: Retrieve[D], uri_base_old: str, uri_base_new: str):
+        self._retrieve = retrieve
+        self._uri_base_old_split = rpurib_split_and_validate_uri_base(uri_base_old)
+        self._uri_base_new_split = rpurib_split_and_validate_uri_base(uri_base_new)
+
+    @property
+    def retrieve_orig(self) -> Retrieve[D]:
+        return self._retrieve
+
+    def __call__(self, uri: str) -> Resource[D]:
+        uri_split = rpurib_split_and_validate_uri(uri)
+        try:
+            uri_new_split = translate_uri_base_splits_validated(
+                uri_split, self._uri_base_old_split, self._uri_base_new_split,
+            )
+        except RPURIBNotRelativeValueError:
+            uri_new = uri
+        else:
+            uri_new = urlunsplit(uri_new_split)
+        return self._retrieve(uri_new)
+
+
+class RetrievalURITranslator(Generic[D]):
+    """Decorator for a :class:`~referencing.typing.Retrieve` callable
+    translating URIs that match with a given old base URI to a new base URI.
+
+    When retrieving a resource, this decorator attempts to resolve the portion
+    of the URI relative to the old base URI. If successful, it rewrites and
+    appends this portion to the new base URI. If translation fails, it either
+    falls back to the original URI (if `allow_old` is True) or immediately
+    raises :exc:`~referencing.exceptions.NoSuchResource`.
+
+    Both base URIs and specific schema URIs are **restricted**:
+    each must have a scheme and a path, and **no** other components
+    are allowed (i.e. **no** credentials, netloc, query, fragment).
+    "Parent" segments ``..`` in the path of a schema URI are prohibited.
+    All of the above properties are validated.
+
+    Parameters:
+        retrieve (Retrieve[D]):
+            Retriever object that implements
+            :class:`referencing.typing.Retrieve`.
+        uri_base_old (str): "Old" base URI.
+        uri_base_new (str): "New" base URI.
+        allow_old (bool, optional):
+            If ``True`` and retrieval by a translated URI fails,
+            also tries the original URI. Default: ``False``.
+    """
+
+    @classmethod
+    def _build_retrievers_chain(
+        cls, retrieve: Retrieve[D], uri_base_old: str, uri_base_new: str,
+        *, allow_old: bool = False,
+    ) -> RetrieversChain[D]:
+        retrievers: list[Retrieve[D]] = [
+            _RetrievalURITranslatorImpl(retrieve, uri_base_old, uri_base_new),
+        ]
+        if allow_old:
+            retrievers.append(retrieve)
+        return RetrieversChain(retrievers)
+
+    def __init__(
+        self, retrieve: Retrieve[D], uri_base_old: str, uri_base_new: str,
+        *, allow_old: bool = False,
+    ):
+        self._retrieve = self._build_retrievers_chain(
+            retrieve, uri_base_old, uri_base_new, allow_old=allow_old,
+        )
+
+    def __call__(self, uri: str) -> Resource[D]:
+        return self._retrieve(uri)

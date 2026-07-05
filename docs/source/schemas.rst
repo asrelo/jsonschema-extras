@@ -10,9 +10,9 @@ To access bundled schemas within your project:
 2. Pass this callable when instantiating :py:class:`referencing.Registry`
 
 All bundled schemas will be available through the registry, using the base URI
-you specified in :py:func:`~jsonschema_extras.bundled_schemas_retriever`.
-If no URI is provided,
-it defaults to :py:data:`~jsonschema_extras.BUNDLED_SCHEMAS_URI_BASE_DEFAULT`.
+:py:data:`~jsonschema_extras.BUNDLED_SCHEMAS_URI_BASE`.
+If you'd like to access them by a different base URI,
+you can use :py:class:`jsonschema_extras.registries.RetrievalURITranslator`.
 
 **Basic example:**
 

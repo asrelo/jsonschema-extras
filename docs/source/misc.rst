@@ -5,6 +5,10 @@ Other utilities
   chain of responsibility composed of retriever functions
   (used to initialize :py:class:`referencing.Registry`).
 
+* :class:`~jsonschema_extras.registries.RetrievalURITranslator` –
+  decorator for a :class:`~referencing.typing.Retrieve` callable
+  translating URIs that match with a given old base URI to a new base URI.
+
 * :func:`~jsonschema_extras.registries.retrieval.to_maybe_cached_resource`
   (also :func:`~jsonschema_extras.registries.retrieval.to_resource`
   and :func:`~jsonschema_extras.registries.retrieval.to_cached_resource`) -

@@ -17,13 +17,21 @@ from functools import partial
 from os import PathLike
 from pathlib import PurePosixPath, PurePath, Path
 from typing import Any, cast
-from urllib.parse import SplitResult, unquote, urlsplit
+from urllib.parse import SplitResult, urlsplit
 
 from referencing.exceptions import NoSuchResource
 from referencing.typing import Retrieve
 
 from jsonschema_extras._common import Kwargs, validate_kwargs
 from jsonschema_extras._util import coerce_to_dict
+from jsonschema_extras._util.uri import (
+    RPURIBValidateURIValueErrorCode,
+    RPURIBValidateURIValueError,
+    rpurib_validate_uri_base_split,
+    rpurib_validate_uri_split,
+    RPURIBNotRelativeValueError,
+    relative_path_from_uri_by_base_splits_validated,
+)
 from jsonschema_extras.typing import D
 from .retrieval import (
     ResourceFromContentsFn,
@@ -47,8 +55,19 @@ __all__ = (
 
 
 def split_and_validate_uri_base(uri_base: str) -> SplitResult:
-    # here scheme is a default value:
-    uri_base_split = urlsplit(uri_base, scheme='')
+    uri_base_split = urlsplit(uri_base)
+    general_err: RPURIBValidateURIValueError | None
+    try:
+        uri_base_split = rpurib_validate_uri_base_split(uri_base_split)
+    except RPURIBValidateURIValueError as err:
+        if err.code not in (
+            RPURIBValidateURIValueErrorCode.HAS_QUERY,
+            RPURIBValidateURIValueErrorCode.HAS_FRAGMENT,
+        ):
+            raise err
+        general_err = err
+    else:
+        general_err = None
     if uri_base_split.scheme != 'file':
         raise ValueError(
             f'base URI should have scheme \'file:\', got: {uri_base_split.scheme!r}'
@@ -57,10 +76,8 @@ def split_and_validate_uri_base(uri_base: str) -> SplitResult:
         raise ValueError('base URI should not have a netloc')
     if (uri_base_split.username is not None) or (uri_base_split.password is not None):
         raise ValueError('base URI should not have credentials')
-    if unquote(uri_base_split.query):
-        raise ValueError('base URI should not have a query')
-    if uri_base_split.fragment:
-        raise ValueError('base URI should not have a fragment')
+    if general_err is not None:
+        raise general_err
     return uri_base_split
 
 
@@ -72,17 +89,29 @@ class NoSuchResourceFromValueError(ValueError):
 
 
 def split_and_validate_uri(uri: str) -> SplitResult:
-    uri_split = urlsplit(uri, scheme='')
+    uri_split = urlsplit(uri)
+    general_err: RPURIBValidateURIValueError | None
+    try:
+        uri_split = rpurib_validate_uri_split(uri_split)
+    except RPURIBValidateURIValueError as err:
+        if err.code not in (
+            RPURIBValidateURIValueErrorCode.HAS_QUERY,
+            RPURIBValidateURIValueErrorCode.HAS_FRAGMENT,
+        ):
+            raise err
+        general_err = err
+    else:
+        general_err = None
     if uri_split.scheme != 'file':
         raise ValueError(f'URI should have \'file:\' scheme, got: {uri_split.scheme!r}')
     if uri_split.netloc:
         raise ValueError('URI should not have a netloc')
     if (uri_split.username is not None) or (uri_split.password is not None):
         raise ValueError('URI should not have credentials')
-    if uri_split.fragment:
-        raise ValueError('URI should not have a fragment')
-    if unquote(uri_split.query):
-        raise NoSuchResourceFromValueError('URI should not have a query')
+    if general_err is not None:
+        if general_err.code == RPURIBValidateURIValueErrorCode.HAS_QUERY:
+            raise NoSuchResourceFromValueError(str(general_err)) from general_err
+        raise general_err
     return uri_split
 
 
@@ -95,11 +124,11 @@ def _relative_path_from_uri_by_base(
     else:
         uri_base_split = uri_base
     uri_split = split_and_validate_uri(uri)  # XXX: ValueError s are propagated
-    uri_path = PurePosixPath(unquote(uri_split.path))
-    uri_base_path = PurePosixPath(unquote(uri_base_split.path))
     try:
-        return uri_path.relative_to(uri_base_path, walk_up=False)
-    except ValueError as err:
+        return relative_path_from_uri_by_base_splits_validated(
+            uri_split, uri_base_split,
+        )
+    except RPURIBNotRelativeValueError as err:
         raise NoSuchResourceFromValueError(str(err)) from err
 
 
