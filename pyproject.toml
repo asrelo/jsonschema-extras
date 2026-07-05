@@ -58,6 +58,7 @@ dev = [
     'sphinx-design ~=0.7.0',
     # XXX: sphinx-jsonschema is good but incomplete
     #"sphinx-jsonschema >=1.19.2,<2",
+    "types-docutils",
     "types-Jinja2",
 ]
 

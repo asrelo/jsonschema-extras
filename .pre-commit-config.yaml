@@ -28,6 +28,8 @@ repos:
         args:
           - "--config-file=.mypy-precommit.ini"
         additional_dependencies:
-          - "pytest"
+          - "pytest ~=9.0"
+          - "sphinx ~=9.0"
+          - "types-docutils"
           - "types-Jinja2"
           - "types-jsonschema"

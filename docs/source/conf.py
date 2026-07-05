@@ -51,6 +51,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_design',
     #'sphinx-jsonschema',
+    'docs.source._ext.jsonschema',
 ]
 
 templates_path = ['_templates']
