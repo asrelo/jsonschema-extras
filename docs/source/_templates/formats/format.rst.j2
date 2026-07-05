@@ -1,0 +1,27 @@
+{% from '_global.j2' import heading %}
+{% set base_level = base_level|default(1) %}
+
+{{ heading(title | default('``' ~ format ~ '``'), base_level) }}
+
+**Format:** ``{{ format }}``
+
+{% if func_path %}
+**Validation function:** :py:func:`{{ func_path }}`
+
+{% if exception_types %}
+**Exceptions** interpreted as format violations:
+{% for exception_type in exception_types %}
+  :py:exc:`{{ exception_type.path }}`
+  {{- ", " if not loop.last else "." -}}
+{% endfor %}
+
+{% endif %}
+.. dropdown:: Validation function
+{% if not compact %}
+   :open:
+{% endif %}
+
+   .. autofunction:: {{ func_path }}
+      :no-index:
+
+{% endif %}

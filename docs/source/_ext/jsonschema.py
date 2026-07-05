@@ -13,6 +13,7 @@ from sphinx.application import Sphinx
 from sphinx.util import logging
 from sphinx.util.docutils import SphinxDirective
 
+from docs.utils.common.ext import get_current_heading_level
 from docs.utils.common.rst import escape_rst
 
 
@@ -103,6 +104,7 @@ class JSONSchemaDirective(SphinxDirective):
         env = _create_jinja_env(templates_paths)
         title_fallback = _doc_title_from_filename(schema_path.name)
         params, _ = _build_template_params(schema, title_fallback=title_fallback)
+        params['base_level'] = (get_current_heading_level(self.state_machine.node) + 1)
         try:
             template = env.get_template('schemas/schema.rst.j2')
             rendered_rst = template.render(**params)
@@ -113,8 +115,8 @@ class JSONSchemaDirective(SphinxDirective):
                     line=self.lineno,
                 )
             ]
-        nested_rules = nodes.container()
         lines = StringList(rendered_rst.splitlines())
+        nested_rules = nodes.container()
         self.state.nested_parse(lines, self.content_offset, nested_rules)
         return nested_rules.children
 

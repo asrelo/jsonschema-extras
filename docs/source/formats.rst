@@ -1,6 +1,8 @@
 Formats
 =======
 
+:doc:`List of bundled formats <./formats/index>`
+
 To enable format validation with bundled format checkers:
 
 1. Create an instance of :py:class:`jsonschema.FormatChecker`,
@@ -35,3 +37,9 @@ To enable format validation with bundled format checkers:
         format_checker, [is_numbers_range_info, is_slice_string_info],
     )
     validate(instance, schema, format_checker=format_checker)
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   formats/index

@@ -52,6 +52,7 @@ extensions = [
     'sphinx_design',
     #'sphinx-jsonschema',
     'docs.source._ext.jsonschema',
+    'docs.source._ext.jsonschema_format',
 ]
 
 templates_path = ['_templates']
