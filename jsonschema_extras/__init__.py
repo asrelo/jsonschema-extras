@@ -9,7 +9,7 @@ Features:
 
 - :doc:`Utilities for accessing schemas on a filesystem </filesystem>`
 
-- :class:`~jsonschema_extras.registries.RetrieveFunctionsChain` -
+- :class:`~jsonschema_extras.registries.RetrieversChain` -
   chain of responsibility composed of retriever functions
   (used to initialize :class:`referencing.Registry`).
 """

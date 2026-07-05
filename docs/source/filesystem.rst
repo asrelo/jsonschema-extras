@@ -108,11 +108,11 @@ function takes the argument `loads` which can be used to replace
 the deserialization code.
 
 For multiple schema roots,
-you can use :py:class:`jsonschema_extras.registries.RetrieveFunctionsChain`:
+you can use :py:class:`jsonschema_extras.registries.RetrieversChain`:
 
 .. code-block:: python
 
-    from jsonschema_extras.registries import RetrieveFunctionsChain
+    from jsonschema_extras.registries import RetrieversChain
     from jsonschema_extras.registries.filesystem import (
         build_schemas_from_filesystem_retriever,
     )
@@ -126,5 +126,5 @@ you can use :py:class:`jsonschema_extras.registries.RetrieveFunctionsChain`:
     )
 
     registry = Registry(
-        retrieve=RetrieveFunctionsChain(internal_retriever, public_retriever),
+        retrieve=RetrieversChain(internal_retriever, public_retriever),
     )

@@ -1,4 +1,4 @@
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Iterable
 from typing import Generic
 
 from referencing import Resource
@@ -9,7 +9,7 @@ from jsonschema_extras.typing import D
 
 
 # NOTE: satisfies Retrieve[D]
-class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
+class RetrieversChain(list[Retrieve[D]], Generic[D]):
     """Chain of :class:`~referencing.typing.Retrieve` callables that attempts
     each retriever in order until one succeeds.
 
@@ -45,7 +45,7 @@ class RetrieveFunctionsChain(list[Retrieve[D]], Generic[D]):
 
     def __init__(
         self,
-        *retrievers: Retrieve[D],
+        retrievers: Iterable[Retrieve[D]] = (),
         postpone_excs: Collection[type[Exception]] = (),
         pass_excs: Collection[type[Exception]] = (),
         should_postpone_exc_fn: Callable[[Exception], bool] = lambda e: False,

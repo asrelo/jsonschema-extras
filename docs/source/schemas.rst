@@ -33,12 +33,12 @@ it defaults to :py:data:`~jsonschema_extras.BUNDLED_SCHEMAS_URI_BASE_DEFAULT`.
 
 **Chaining multiple retrievers:**
 
-Use :py:class:`~jsonschema_extras.registries.RetrieveFunctionsChain`
+Use :py:class:`~jsonschema_extras.registries.RetrieversChain`
 to combine multiple retrieval callables.
 
 .. code-block:: python
 
-    from jsonschema_extras import RetrieveFunctionsChain, bundled_schemas_retriever
+    from jsonschema_extras import RetrieversChain, bundled_schemas_retriever
     from referencing import Registry
     from referencing.typing import Retrieve
 
@@ -46,7 +46,7 @@ to combine multiple retrieval callables.
 
     with bundled_schemas_retriever() as retrieve_bundled_schemas:
         registry = Registry(
-            retrieve=RetrieveFunctionsChain(
+            retrieve=RetrieversChain(
                 retrieve_custom, retrieve_bundled_schemas,
             ),
         )

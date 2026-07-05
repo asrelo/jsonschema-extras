@@ -4,7 +4,7 @@ from .retrieval import *  # noqa: F401,F403 # type: ignore[misc]
 
 
 __all__ = (
-    'RetrieveFunctionsChain',
+    'RetrieversChain',
     'RESOURCE_FROM_CONTENTS_FN_DEFAULT',
     'LOADS_FN_JSON_DEFAULT',
     'NoSuchResourceFromValueError',

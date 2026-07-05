@@ -1,7 +1,7 @@
 Other utilities
 ===============
 
-* :class:`~jsonschema_extras.registries.RetrieveFunctionsChain` –
+* :class:`~jsonschema_extras.registries.RetrieversChain` –
   chain of responsibility composed of retriever functions
   (used to initialize :py:class:`referencing.Registry`).
 
