@@ -1,0 +1,15 @@
+:tocdepth: 2
+
+Bundled schemas
+===============
+
+{% for schema_id, schema_data_tuple in schemas.items() %}
+{% with
+  title = "``" ~ schema_data_tuple[1] ~ "``: " ~ schema_data_tuple[0].title,
+  schema = schema_data_tuple[0].schema,
+  base_level = 2
+%}
+  {% include 'schemas/_schema_content.rst.j2' %}
+{% endwith %}
+
+{% endfor %}

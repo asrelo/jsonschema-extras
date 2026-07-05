@@ -54,13 +54,13 @@ extensions = [
 
 templates_path = ['_templates']
 exclude_patterns = [
-    'global.rst',
+    '_global.rst',
     '**/tests/*',
 ]
 
 
 rst_prolog = '''
-.. include:: /global.rst
+.. include:: /_global.rst
 '''
 
 

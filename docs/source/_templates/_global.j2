@@ -1,0 +1,6 @@
+{% macro heading(text, level=1) -%}
+{% set chars = ['=', '-', '^', '"', '~', '#'] -%}
+{% set char = chars[level - 1] if level <= chars|length else '=' -%}
+{{ text }}
+{{ char * text|length }}
+{%- endmacro %}

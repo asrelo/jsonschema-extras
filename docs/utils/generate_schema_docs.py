@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from enum import StrEnum
 import json
 from pathlib import PurePosixPath, PurePath, Path
 import sys
@@ -18,6 +19,17 @@ from .common.rst import escape_rst
 SCRIPT_IDENTITY = 'generate_schema'
 
 
+class LayoutMode(StrEnum):
+    SINGLE = 'single'
+    MULTI = 'multi'
+
+
+LAYOUT_MODE_DEFAULT = LayoutMode.SINGLE
+
+
+LAYOUT_SINGLE_EXAMPLES_NUM_MAX = 4
+
+
 SCHEMAS_REL_PATH_DEFAULT = PurePath('jsonschema_extras') / 'schemas'
 
 OUTPUT_SOURCE_REL_PATH_DEFAULT = PurePath('schemas')
@@ -26,6 +38,17 @@ INDEX_DOC_NAME_DEFAULT = PurePosixPath('index')
 
 
 TITLE_FALLBACK_NONE = '(unknown)'
+
+
+def _print_err(*values: object, file=None, **kwargs) -> None:
+    if file is None:
+        file = sys.stderr
+    values_new: Sequence[object]
+    if len(values) > 0:
+        values_new = [f'{SCRIPT_IDENTITY}: {values[0]}', *values[1:]]
+    else:
+        values_new = values
+    return print(*values_new, file=file, **kwargs)
 
 
 def jinja_filter_to_pretty_json(obj, indent=2):
@@ -96,7 +119,7 @@ def doc_title_from_schema_filename(name):
     return PurePath(name).stem.replace('_', ' ').title()
 
 
-def generate_doc_for_schema(schema, *, title_fallback=None):
+def _build_schema_template_params(schema, *, title_fallback=None):
     if title_fallback is None:
         # XXX: ?
         title_fallback = TITLE_FALLBACK_NONE
@@ -105,10 +128,61 @@ def generate_doc_for_schema(schema, *, title_fallback=None):
     d['title'] = (title := schema.get('title', title_fallback))
     d['schema_id'] = schema.get('$id')
     d['schema_uri'] = schema.get('$schema')
-    env = jinja_env_manager.get()
-    template = env.get_template('schemas/schema.rst.j2')
+    return (d, title)
+
+
+def generate_doc_for_schema(
+    schema, *, title_fallback=None, examples_num_max=None, jinja_env=None,
+):
+    if jinja_env is None:
+        jinja_env = jinja_env_manager.get()
+    d, title = _build_schema_template_params(schema, title_fallback=title_fallback)
+    d['examples_num_max'] = examples_num_max
+    template = jinja_env.get_template('schemas/schema.rst.j2')
     doc = template.render(**d)
     return (doc, title)
+
+
+def _build_schema_template_params_from_schemas_all_entry(schema_entry):
+    if len(schema_entry) == 2:
+        schema, info = schema_entry
+    elif len(schema_entry) == 1:
+        schema, = schema_entry
+        info = {}
+    else:
+        raise ValueError(
+            'schema_entry should be a tuple of 1 or 2 elemenets'
+            ' (schema object and optional info dict)'
+        )
+    doc, title_tmp = _build_schema_template_params(
+        schema,
+        title_fallback=info.get('title_fallback'),
+    )
+    doc_name = info.get('doc_name')
+    if doc_name is None:
+        doc_name = title_tmp
+    return (doc, doc_name)
+
+
+def generate_doc_for_schemas_all(
+    schema_entries, *, examples_num_max=None, jinja_env=None,
+):
+    if jinja_env is None:
+        jinja_env = jinja_env_manager.get()
+    schemas_params_and_doc_names = [
+        _build_schema_template_params_from_schemas_all_entry(se)
+        for se in schema_entries
+    ]
+    schema_params_and_doc_names_by_schema_id = {
+        schema_params['schema_id']: (schema_params, doc_name)
+        for schema_params, doc_name in schemas_params_and_doc_names
+    }
+    d = {
+        'schemas': schema_params_and_doc_names_by_schema_id,
+        'examples_num_max': examples_num_max,
+    }
+    template = jinja_env.get_template('schemas/schemas_all.rst.j2')
+    return template.render(**d)
 
 
 def generate_index_doc(docs_info):
@@ -143,6 +217,19 @@ class NoSchemaFilesFoundWarning(UserWarning):
     pass
 
 
+def main_impl_get_schema_file_paths(schemas_path=None):
+    schemas_path = main_impl_resolve_schemas_path(schemas_path)
+    if not schemas_path.is_dir():
+        raise SchemasDirectoryNotFoundError(str(schemas_path))
+    schema_file_paths = sorted(schemas_path.rglob('*.json'))
+    if len(schema_file_paths) == 0:
+        warn(
+            f'no schema files found in {str(schemas_path)!r}',
+            NoSchemaFilesFoundWarning,
+        )
+    return schema_file_paths
+
+
 class SchemaProcessingError(Exception):
 
     @classmethod
@@ -154,16 +241,12 @@ class SchemaProcessingError(Exception):
         self.schema_relpath = schema_relpath
 
 
-def main_impl_schema_docs(schemas_path=None, output_path=None):
+def main_impl_schema_docs_multi(
+    schemas_path=None, output_path=None,
+    *, examples_num_max=None, jinja_env=None,
+):
     schemas_path = main_impl_resolve_schemas_path(schemas_path)
-    if not schemas_path.is_dir():
-        raise SchemasDirectoryNotFoundError(str(schemas_path))
-    schema_file_paths = sorted(schemas_path.rglob('*.json'))
-    if len(schema_file_paths) == 0:
-        warn(
-            f'no schema files found in {str(schemas_path)!r}',
-            NoSchemaFilesFoundWarning,
-        )
+    schema_file_paths = main_impl_get_schema_file_paths(schemas_path)
     output_path = main_impl_resolve_and_make_output_path(output_path)
     docs_info = []
     doc_excs = []
@@ -175,6 +258,8 @@ def main_impl_schema_docs(schemas_path=None, output_path=None):
             doc, doc_title = generate_doc_for_schema(
                 schema,
                 title_fallback=doc_title_from_schema_filename(schema_relpath.name),
+                examples_num_max=examples_num_max,
+                jinja_env=jinja_env,
             )
             doc_path.parent.mkdir(parents=True, exist_ok=True)
             write_rst_to_path(doc_path, doc)
@@ -192,21 +277,93 @@ def main_impl_schema_docs(schemas_path=None, output_path=None):
     return (docs_info, err_group)
 
 
+def _main_impl_schema_docs_single_make_schema_entry_for_doc(schemas_path, schema_path):
+    schema_relpath = schema_path.relative_to(schemas_path)
+    schema = read_schema_from_path(schema_path)
+    return (
+        schema,
+        dict(
+            title_fallback=doc_title_from_schema_filename(schema_relpath.name),
+            doc_name=schema_relpath.with_suffix('').as_posix(),
+        ),
+    )
+
+
+class DocForSchemasAllProcessingError(Exception):
+    pass
+
+
+def main_impl_schema_docs_single(
+    schemas_path=None, output_path=None,
+    *, index_doc_name=INDEX_DOC_NAME_DEFAULT, examples_num_max=None, jinja_env=None,
+):
+    schemas_path = main_impl_resolve_schemas_path(schemas_path)
+    schema_file_paths = main_impl_get_schema_file_paths(schemas_path)
+    output_path = main_impl_resolve_and_make_output_path(output_path)
+    schema_entries_for_doc = []
+    schema_entries_for_doc_excs = []
+    for schema_path in schema_file_paths:
+        schema_relpath = schema_path.relative_to(schemas_path)
+        try:
+            schema_entry_for_doc = (
+                _main_impl_schema_docs_single_make_schema_entry_for_doc(
+                    schemas_path, schema_path,
+                )
+            )
+        except Exception as err:
+            err_2 = SchemaProcessingError(schema_relpath)
+            err_2.__cause__ = err
+            schema_entries_for_doc_excs.append(err_2)
+        else:
+            schema_entries_for_doc.append(schema_entry_for_doc)
+    try:
+        doc = generate_doc_for_schemas_all(
+            schema_entries_for_doc,
+            examples_num_max=examples_num_max, jinja_env=jinja_env,
+        )
+        doc_path = output_path / PurePath(index_doc_name).with_suffix('.rst')
+        doc_path.parent.mkdir(parents=True, exist_ok=True)
+        doc_path = output_path / PurePath(index_doc_name).with_suffix('.rst')
+        doc_path.parent.mkdir(parents=True, exist_ok=True)
+        write_rst_to_path(doc_path, doc)
+    except Exception as err:
+        raise DocForSchemasAllProcessingError(str(err)) from err
+    if len(schema_entries_for_doc_excs) > 0:
+        err_group = ExceptionGroup(
+            'Some schemas could not be processed', schema_entries_for_doc_excs
+        )
+    else:
+        err_group = None
+    return (len(schema_entries_for_doc), err_group)
+
+
 def main_impl_resolve_index_path(
     output_path=None, *, index_doc_name=INDEX_DOC_NAME_DEFAULT,
 ):
     output_path = main_impl_resolve_and_make_output_path(output_path)
-    return (output_path / PurePath(index_doc_name))
+    return (output_path / PurePath(index_doc_name).with_suffix('.rst'))
 
 
 def main_impl_index_doc(
     docs_info, output_path=None, *, index_doc_name=INDEX_DOC_NAME_DEFAULT,
 ):
-    output_path = main_impl_resolve_and_make_output_path(output_path)
-    index_path = output_path / PurePath(index_doc_name).with_suffix('.rst')
+    index_path = main_impl_resolve_index_path(
+        output_path, index_doc_name=index_doc_name,
+    )
     index_doc = generate_index_doc(docs_info)
+    index_path.parent.mkdir(parents=True, exist_ok=True)
     write_rst_to_path(index_path, index_doc)
     return index_path
+
+
+def _validate_cli_examples_num_max(s):
+    val = int(s)
+    if val < 0:
+        raise ValueError('examples-num-max must be non-negative')
+    return val
+
+
+_CLI_NO_EXAMPLES_NUM_MAX_SENTINEL = object()
 
 
 def build_cli_args_parser(prog_name=None):
@@ -262,6 +419,13 @@ def build_cli_args_parser(prog_name=None):
         dest='do_purge',
     )
     parser.add_argument(
+        '--layout',
+        choices=list(map(str, LayoutMode)),
+        default=str(LAYOUT_MODE_DEFAULT),
+        help='layout mode',
+        dest='layout_mode',
+    )
+    parser.add_argument(
         '--templates',
         type=Path,
         help=(
@@ -271,12 +435,39 @@ def build_cli_args_parser(prog_name=None):
         metavar='PATH',
         dest='templates_path',
     )
+    parser_examples_num_max = parser.add_mutually_exclusive_group()
+    parser_examples_num_max.add_argument(
+        '--examples-num-max',
+        type=_validate_cli_examples_num_max,
+        help=(
+            f'maximum number of examples for each schema'
+            f' (default: by layout, single: {LAYOUT_SINGLE_EXAMPLES_NUM_MAX},'
+            f' multi: no restriction)'
+            f' (see also --no-examples-num-max)'
+        ),
+        metavar='NUM',
+        dest='examples_num_max',
+    )
+    parser_examples_num_max.add_argument(
+        '--no-examples-num-max',
+        action='store_const',
+        const=_CLI_NO_EXAMPLES_NUM_MAX_SENTINEL,
+        help=(
+            'disable restriction on the number of examples for each schema'
+            ' (see --examples-num-max)'
+        ),
+        dest='examples_num_max',
+    )
     parser.add_argument('-q', '--quiet', action='store_true', dest='quiet')
     return parser
 
 
 def parse_cli_args(parser, argv_trunc):
-    return parser.parse_args(argv_trunc)
+    args = parser.parse_args(argv_trunc)
+    args.layout_mode = LayoutMode(args.layout_mode)
+    if (args.layout_mode == LayoutMode.SINGLE) and (args.examples_num_max is None):
+        args.examples_num_max = LAYOUT_SINGLE_EXAMPLES_NUM_MAX
+    return args
 
 
 def main(argv):  # noqa: C901
@@ -288,37 +479,62 @@ def main(argv):  # noqa: C901
         try:
             main_impl_purge(args.output_path)
         except Exception as err:
-            print(
-                (
-                    f'{SCRIPT_IDENTITY}:'
-                    f' error: failed to purge the output directory: {err}'
-                ),
-                file=sys.stderr,
+            _print_err(
+                f'error: failed to purge the output directory'
+                f' {str(args.output_path)!r}: {err}'
             )
             return 2
+    layout_mode = args.layout_mode
+    index_doc_name = (
+        args.index_doc_name
+        if args.index_doc_name is not None
+        else INDEX_DOC_NAME_DEFAULT
+    )
     jinja_env_manager.init(templates_path=args.templates_path)
     error_occured = False
     with catch_warnings(record=True) as warns:
         warnings.simplefilter('always', NoSchemaFilesFoundWarning)
         try:
-            docs_info, docs_err_group = main_impl_schema_docs(
-                args.input_path, args.output_path,
-            )
-        except SchemasDirectoryNotFoundError:
-            print(
-                (
-                    '{0}: error: schemas directory not found: {1!r}'
-                    .format(
-                        SCRIPT_IDENTITY,
-                        str(main_impl_resolve_schemas_path(args.input_path)),
+            match layout_mode:
+                case LayoutMode.SINGLE:
+                    try:
+                        docs_num, docs_err_group = main_impl_schema_docs_single(
+                            args.input_path, args.output_path,
+                            index_doc_name=index_doc_name,
+                            examples_num_max=args.examples_num_max,
+                        )
+                    except DocForSchemasAllProcessingError as err:
+                        docs_num = 0
+                        docs_err_group = None
+                        _print_err(
+                            'error: failed to make index doc {0!r} at {1!r}: {2!s}'
+                            .format(
+                                str(index_doc_name),
+                                str(main_impl_resolve_index_path(
+                                    args.output_path,
+                                    index_doc_name=index_doc_name,
+                                )),
+                                err,
+                            )
+                        )
+                    docs_info = None
+                case LayoutMode.MULTI:
+                    docs_info, docs_err_group = main_impl_schema_docs_multi(
+                        args.input_path, args.output_path,
+                        examples_num_max=args.examples_num_max,
                     )
-                ),
-                file=sys.stderr,
+                    docs_num = len(docs_info)
+                case _:
+                    return -1
+        except SchemasDirectoryNotFoundError:
+            _print_err(
+                'error: schemas directory not found: {0!r}'
+                .format(str(main_impl_resolve_schemas_path(args.input_path)))
             )
             return 2
     if not quiet:
         for warning in warns:
-            print(f'{SCRIPT_IDENTITY}: warning: {warning.message}', file=sys.stderr)
+            _print_err(f'warning: {warning.message}', file=sys.stderr)
     if docs_err_group is not None:
         error_occured = True
         err_match, err_rest = docs_err_group.split(SchemaProcessingError)
@@ -327,58 +543,47 @@ def main(argv):  # noqa: C901
                 Iterable[SchemaProcessingError],
                 err_match.exceptions
             ):
-                print(
-                    (
-                        f'{SCRIPT_IDENTITY}: error:'
-                        f' failed to process {str(err.schema_relpath)!r}:'  # type: ignore[misc] # noqa: E501
-                        f' {err.__cause__}'  # type: ignore[misc]
-                    ),
-                    file=sys.stderr,
+                _print_err(
+                    f'error: failed to process {str(err.schema_relpath)!r}:'    # type: ignore[misc] # noqa: E501
+                    f' {err.__cause__}'  # type: ignore[misc]
                 )
         if err_rest is not None:
             raise err_rest
-    if not quiet:
-        print(
-            (
-                f'{SCRIPT_IDENTITY}:'
-                f' generated {len(docs_info)} schema documentation files'
-            ),
-            file=sys.stderr,
-        )
-    index_doc_name = (
-        args.index_doc_name
-        if args.index_doc_name is not None
-        else INDEX_DOC_NAME_DEFAULT
-    )
-    try:
-        index_path = main_impl_index_doc(
-            docs_info, args.output_path, index_doc_name=index_doc_name,
-        )
-    except Exception as err:
-        error_occured = True
-        print(
-            (
-                '{0}: error: failed to make index doc {1!r} at {2!r}: {3!s}'
-                .format(
-                    SCRIPT_IDENTITY,
-                    str(index_doc_name),
-                    str(main_impl_resolve_index_path(
-                        args.output_path, index_doc_name=index_doc_name,
-                    )),
-                    err,
-                ),
-            ),
-            file=sys.stderr,
-        )
-    else:
-        if not quiet:
-            print(
-                (
-                    f'{SCRIPT_IDENTITY}: index {str(index_doc_name)}'
-                    f' created at {str(index_path)!r}'
-                ),
-                file=sys.stderr,
-            )
+    match layout_mode:
+        case LayoutMode.SINGLE:
+            if not quiet:
+                index_path = main_impl_resolve_index_path(
+                    docs_info, index_doc_name=index_doc_name,
+                )
+                _print_err(
+                    f'index {str(index_doc_name)} created at {str(index_path)!r}'
+                )
+        case LayoutMode.MULTI:
+            if not quiet:
+                _print_err(f'generated {docs_num} schema documentation files')
+            try:
+                index_path = main_impl_index_doc(
+                    docs_info, args.output_path, index_doc_name=index_doc_name,
+                )
+            except Exception as err:
+                error_occured = True
+                _print_err(
+                    'error: failed to make index doc {0!r} at {1!r}: {2!s}'
+                    .format(
+                        str(index_doc_name),
+                        str(main_impl_resolve_index_path(
+                            args.output_path, index_doc_name=index_doc_name,
+                        )),
+                        err,
+                    ),
+                )
+            else:
+                if not quiet:
+                    _print_err(
+                        f'index {str(index_doc_name)} created at {str(index_path)!r}'
+                    )
+        case _:
+            return -1
     if error_occured:
         return 2
     return 0
