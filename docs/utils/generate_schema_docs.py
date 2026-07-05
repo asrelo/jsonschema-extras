@@ -1,14 +1,11 @@
 # TODO: use something like "fractured JSON" for examples (pretty but fairly compact)
 
 from argparse import ArgumentParser
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from enum import StrEnum
 import json
 from pathlib import PurePosixPath, PurePath, Path
 import sys
-from typing import cast
-import warnings
-from warnings import catch_warnings, warn
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -182,90 +179,6 @@ def generate_index_doc(docs_info):
     return template.render({'docs_info': docs_info})
 
 
-def main_impl_resolve_and_make_output_path(output_path=None):
-    if output_path is None:
-        output_path = DOCS_SOURCE_PATH / OUTPUT_SOURCE_REL_PATH_DEFAULT
-    output_path.mkdir(parents=True, exist_ok=True)
-    return output_path
-
-
-def main_impl_purge(output_path=None):
-    output_path = main_impl_resolve_and_make_output_path(output_path)
-    purge_directory(output_path)
-
-
-def main_impl_resolve_schemas_path(schemas_path=None):
-    if schemas_path is None:
-        schemas_path = PROJECT_PATH / SCHEMAS_REL_PATH_DEFAULT
-    return schemas_path
-
-
-class SchemasDirectoryNotFoundError(FileNotFoundError):
-    pass
-
-
-class NoSchemaFilesFoundWarning(UserWarning):
-    pass
-
-
-def main_impl_get_schema_file_paths(schemas_path=None):
-    schemas_path = main_impl_resolve_schemas_path(schemas_path)
-    if not schemas_path.is_dir():
-        raise SchemasDirectoryNotFoundError(str(schemas_path))
-    schema_file_paths = sorted(schemas_path.rglob('*.json'))
-    if len(schema_file_paths) == 0:
-        warn(
-            f'no schema files found in {str(schemas_path)!r}',
-            NoSchemaFilesFoundWarning,
-        )
-    return schema_file_paths
-
-
-class SchemaProcessingError(Exception):
-
-    @classmethod
-    def _make_message(cls, schema_relpath):
-        return f'Could not process the schema {str(schema_relpath)!r}'
-
-    def __init__(self, schema_relpath):
-        super().__init__(self._make_message(schema_relpath))
-        self.schema_relpath = schema_relpath
-
-
-def main_impl_schema_docs_multi(
-    schemas_path=None, output_path=None, *, jinja_env=None,
-):
-    schemas_path = main_impl_resolve_schemas_path(schemas_path)
-    schema_file_paths = main_impl_get_schema_file_paths(schemas_path)
-    output_path = main_impl_resolve_and_make_output_path(output_path)
-    docs_info = []
-    doc_excs = []
-    for schema_path in schema_file_paths:
-        schema_relpath = schema_path.relative_to(schemas_path)
-        doc_path = output_path / schema_relpath.with_suffix('.rst')
-        try:
-            schema = read_schema_from_path(schema_path)
-            doc, doc_title = generate_doc_for_schema(
-                schema,
-                title_fallback=doc_title_from_schema_filename(schema_relpath.name),
-                jinja_env=jinja_env,
-            )
-            doc_path.parent.mkdir(parents=True, exist_ok=True)
-            write_rst_to_path(doc_path, doc)
-        except Exception as err:
-            err_2 = SchemaProcessingError(schema_relpath)
-            err_2.__cause__ = err
-            doc_excs.append(err_2)
-        else:
-            doc_name = schema_relpath.with_suffix('').as_posix()
-            docs_info.append((doc_name, doc_title))
-    if len(doc_excs) > 0:
-        err_group = ExceptionGroup('Some schemas could not be processed', doc_excs)
-    else:
-        err_group = None
-    return (docs_info, err_group)
-
-
 def _main_impl_schema_docs_single_make_schema_entry_for_doc(schemas_path, schema_path):
     schema_relpath = schema_path.relative_to(schemas_path)
     schema = read_schema_from_path(schema_path)
@@ -276,79 +189,6 @@ def _main_impl_schema_docs_single_make_schema_entry_for_doc(schemas_path, schema
             doc_name=schema_relpath.with_suffix('').as_posix(),
         ),
     )
-
-
-class DocForSchemasAllProcessingError(Exception):
-    pass
-
-
-def main_impl_schema_docs_single(
-    schemas_path=None, output_path=None,
-    *, index_doc_name=INDEX_DOC_NAME_DEFAULT, jinja_env=None,
-):
-    schemas_path = main_impl_resolve_schemas_path(schemas_path)
-    schema_file_paths = main_impl_get_schema_file_paths(schemas_path)
-    output_path = main_impl_resolve_and_make_output_path(output_path)
-    schema_entries_for_doc = []
-    schema_entries_for_doc_excs = []
-    for schema_path in schema_file_paths:
-        schema_relpath = schema_path.relative_to(schemas_path)
-        try:
-            schema_entry_for_doc = (
-                _main_impl_schema_docs_single_make_schema_entry_for_doc(
-                    schemas_path, schema_path,
-                )
-            )
-        except Exception as err:
-            err_2 = SchemaProcessingError(schema_relpath)
-            err_2.__cause__ = err
-            schema_entries_for_doc_excs.append(err_2)
-        else:
-            schema_entries_for_doc.append(schema_entry_for_doc)
-    try:
-        doc = generate_doc_for_schemas_all(
-            schema_entries_for_doc, jinja_env=jinja_env,
-        )
-        doc_path = output_path / PurePath(index_doc_name).with_suffix('.rst')
-        doc_path.parent.mkdir(parents=True, exist_ok=True)
-        doc_path = output_path / PurePath(index_doc_name).with_suffix('.rst')
-        doc_path.parent.mkdir(parents=True, exist_ok=True)
-        write_rst_to_path(doc_path, doc)
-    except Exception as err:
-        raise DocForSchemasAllProcessingError(str(err)) from err
-    if len(schema_entries_for_doc_excs) > 0:
-        err_group = ExceptionGroup(
-            'Some schemas could not be processed', schema_entries_for_doc_excs
-        )
-    else:
-        err_group = None
-    return (len(schema_entries_for_doc), err_group)
-
-
-def main_impl_resolve_index_path(
-    output_path=None, *, index_doc_name=INDEX_DOC_NAME_DEFAULT,
-):
-    output_path = main_impl_resolve_and_make_output_path(output_path)
-    return (output_path / PurePath(index_doc_name).with_suffix('.rst'))
-
-
-def main_impl_index_doc(
-    docs_info, output_path=None, *, index_doc_name=INDEX_DOC_NAME_DEFAULT,
-):
-    index_path = main_impl_resolve_index_path(
-        output_path, index_doc_name=index_doc_name,
-    )
-    index_doc = generate_index_doc(docs_info)
-    index_path.parent.mkdir(parents=True, exist_ok=True)
-    write_rst_to_path(index_path, index_doc)
-    return index_path
-
-
-def _validate_cli_examples_num_max(s):
-    val = int(s)
-    if val < 0:
-        raise ValueError('examples-num-max must be non-negative')
-    return val
 
 
 def build_cli_args_parser(prog_name=None):
@@ -435,111 +275,128 @@ def main(argv):  # noqa: C901
     # XXX: return code on error!?
     args = parse_cli_args(args_parser, argv[1:])   # may exit
     quiet = args.quiet
+    output_path = (
+        args.output_path
+        if args.output_path is not None
+        else (DOCS_SOURCE_PATH / OUTPUT_SOURCE_REL_PATH_DEFAULT)
+    )
+    try:
+        output_path.mkdir(parents=True, exist_ok=True)
+    except Exception as err:
+        _print_err(
+            f'error: failed to create the output directory'
+            f' {str(args.output_path)!r}: {err}'
+        )
+        return 2
     if args.do_purge:
         try:
-            main_impl_purge(args.output_path)
+            purge_directory(output_path)
         except Exception as err:
             _print_err(
                 f'error: failed to purge the output directory'
                 f' {str(args.output_path)!r}: {err}'
             )
             return 2
+    schemas_path = (
+        args.input_path
+        if args.input_path is not None
+        else (PROJECT_PATH / SCHEMAS_REL_PATH_DEFAULT)
+    )
     layout_mode = args.layout_mode
     index_doc_name = (
         args.index_doc_name
         if args.index_doc_name is not None
         else INDEX_DOC_NAME_DEFAULT
     )
+    index_path = (output_path / PurePath(index_doc_name).with_suffix('.rst'))
     jinja_env_manager.init(templates_path=args.templates_path)
+    if not schemas_path.is_dir():
+        _print_err(
+            'error: schemas directory not found: {0!r}'
+            .format(str(schemas_path))
+        )
+        return 2
+    schema_file_paths = sorted(schemas_path.rglob('*.json'))
+    if (not quiet) and (len(schema_file_paths) == 0):
+        _print_err(f'warning: no schema files found in {str(schemas_path)!r}')
     error_occured = False
-    with catch_warnings(record=True) as warns:
-        warnings.simplefilter('always', NoSchemaFilesFoundWarning)
-        try:
-            match layout_mode:
-                case LayoutMode.SINGLE:
-                    try:
-                        docs_num, docs_err_group = main_impl_schema_docs_single(
-                            args.input_path, args.output_path,
-                            index_doc_name=index_doc_name,
-                        )
-                    except DocForSchemasAllProcessingError as err:
-                        docs_num = 0
-                        docs_err_group = None
-                        _print_err(
-                            'error: failed to make index doc {0!r} at {1!r}: {2!s}'
-                            .format(
-                                str(index_doc_name),
-                                str(main_impl_resolve_index_path(
-                                    args.output_path,
-                                    index_doc_name=index_doc_name,
-                                )),
-                                err,
-                            )
-                        )
-                    docs_info = None
-                case LayoutMode.MULTI:
-                    docs_info, docs_err_group = main_impl_schema_docs_multi(
-                        args.input_path, args.output_path,
-                    )
-                    docs_num = len(docs_info)
-                case _:
-                    return -1
-        except SchemasDirectoryNotFoundError:
-            _print_err(
-                'error: schemas directory not found: {0!r}'
-                .format(str(main_impl_resolve_schemas_path(args.input_path)))
-            )
-            return 2
-    if not quiet:
-        for warning in warns:
-            _print_err(f'warning: {warning.message}', file=sys.stderr)
-    if docs_err_group is not None:
-        error_occured = True
-        err_match, err_rest = docs_err_group.split(SchemaProcessingError)
-        if err_match is not None:
-            for err in cast(    # type: ignore[misc]
-                Iterable[SchemaProcessingError],
-                err_match.exceptions
-            ):
-                _print_err(
-                    f'error: failed to process {str(err.schema_relpath)!r}:'    # type: ignore[misc] # noqa: E501
-                    f' {err.__cause__}'  # type: ignore[misc]
-                )
-        if err_rest is not None:
-            raise err_rest
     match layout_mode:
         case LayoutMode.SINGLE:
-            if not quiet:
-                index_path = main_impl_resolve_index_path(
-                    docs_info, index_doc_name=index_doc_name,
+            schema_entries_for_doc = []
+            for schema_path in schema_file_paths:
+                schema_relpath = schema_path.relative_to(schemas_path)
+                try:
+                    schema_entry_for_doc = (
+                        _main_impl_schema_docs_single_make_schema_entry_for_doc(
+                            schemas_path, schema_path,
+                        )
+                    )
+                except Exception as err:
+                    _print_err(
+                        'error: failed to process {0!r}: {1}'
+                        .format(str(schema_path.relative_to(schemas_path)), err)
+                    )
+                else:
+                    schema_entries_for_doc.append(schema_entry_for_doc)
+            try:
+                doc = generate_doc_for_schemas_all(schema_entries_for_doc)
+                doc_path = (
+                    output_path / PurePath(index_doc_name).with_suffix('.rst')
                 )
+                doc_path.parent.mkdir(parents=True, exist_ok=True)
+                write_rst_to_path(doc_path, doc)
+            except Exception as err:
+                docs_num = 0
+                _print_err(
+                    'error: failed to make index doc {0!r} at {1!r}: {2!s}'
+                    .format(str(index_doc_name), str(index_path), err)
+                )
+            else:
+                docs_num = len(schema_entries_for_doc)
+            if not quiet:
                 _print_err(
                     f'index {str(index_doc_name)} created at {str(index_path)!r}'
                 )
         case LayoutMode.MULTI:
+            docs_info = []
+            for schema_path in schema_file_paths:
+                schema_relpath = schema_path.relative_to(schemas_path)
+                doc_path = output_path / schema_relpath.with_suffix('.rst')
+                try:
+                    schema = read_schema_from_path(schema_path)
+                    doc, doc_title = generate_doc_for_schema(
+                        schema,
+                        title_fallback=doc_title_from_schema_filename(
+                            schema_relpath.name
+                        ),
+                    )
+                    doc_path.parent.mkdir(parents=True, exist_ok=True)
+                    write_rst_to_path(doc_path, doc)
+                except Exception as err:
+                    _print_err(
+                        f'error:'
+                        f' failed to process {str(schema_relpath)!r}: {err}'
+                    )
+                else:
+                    doc_name = schema_relpath.with_suffix('').as_posix()
+                    docs_info.append((doc_name, doc_title))
+            docs_num = len(docs_info)
             if not quiet:
                 _print_err(f'generated {docs_num} schema documentation files')
             try:
-                index_path = main_impl_index_doc(
-                    docs_info, args.output_path, index_doc_name=index_doc_name,
-                )
+                index_doc = generate_index_doc(docs_info)
+                index_path.parent.mkdir(parents=True, exist_ok=True)
+                write_rst_to_path(index_path, index_doc)
             except Exception as err:
                 error_occured = True
                 _print_err(
                     'error: failed to make index doc {0!r} at {1!r}: {2!s}'
-                    .format(
-                        str(index_doc_name),
-                        str(main_impl_resolve_index_path(
-                            args.output_path, index_doc_name=index_doc_name,
-                        )),
-                        err,
-                    ),
+                    .format(str(index_doc_name), str(index_path), err),
                 )
             else:
-                if not quiet:
-                    _print_err(
-                        f'index {str(index_doc_name)} created at {str(index_path)!r}'
-                    )
+                _print_err(
+                    f'index {str(index_doc_name)} created at {str(index_path)!r}'
+                )
         case _:
             return -1
     if error_occured:
