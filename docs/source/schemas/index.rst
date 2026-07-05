@@ -11,6 +11,32 @@ Bundled schemas
 
 Represents a numeric range defined by a minimum and maximum value. The array must contain exactly two numbers where the first element is the lower bound and the second is the upper bound.
 
+Examples
+^^^^^^^^
+
+.. dropdown:: Examples
+
+   .. code-block:: json
+
+      [
+        0,
+        100
+      ]
+
+   .. code-block:: json
+
+      [
+        -5.5,
+        4.5
+      ]
+
+   .. code-block:: json
+
+      [
+        1.0,
+        1000000000.0
+      ]
+
 
 
 ``common/range_integer``: Integer range
@@ -53,7 +79,7 @@ Examples
 
 **ID:** ``file:/jsonschema_extras/schemas/common/slice_object.json``
 
-Represents a slice notation for selecting a range of elements, similar to Python's slice(start, stop, step) syntax. All properties are optional.
+Represents a slice notation for selecting a range of elements, similar to Python's ``slice(start, stop, step)`` syntax. All properties are optional.
 
 Examples
 ^^^^^^^^
@@ -95,7 +121,7 @@ Examples
 
 **ID:** ``file:/jsonschema_extras/schemas/common/slice_string.json``
 
-A string representing a slice operation in Python notation. Supports start:stop:step syntax where each component is optional and can be negative. Used for specifying ranges and steps in sequence operations.
+A string representing a slice operation in Python notation. Supports ``start:stop:step`` syntax where each component is optional and can be negative. Used for specifying ranges and steps in sequence operations.
 
 Examples
 ^^^^^^^^

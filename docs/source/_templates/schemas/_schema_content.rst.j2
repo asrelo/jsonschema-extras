@@ -12,7 +12,8 @@
 **ID:** ``{{ schema_id }}``
 
 {% if schema.description %}
-{{ schema.description|escape_rst }}
+{# NOTE: not escaping? #}
+{{ schema.description }}
 
 {% endif %}
 {% if schema.examples %}

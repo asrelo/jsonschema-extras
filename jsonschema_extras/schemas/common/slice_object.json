@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "file:/jsonschema_extras/schemas/common/slice_object.json",
   "title": "Slice object",
-  "description": "Represents a slice notation for selecting a range of elements, similar to Python's slice(start, stop, step) syntax. All properties are optional.",
+  "description": "Represents a slice notation for selecting a range of elements, similar to Python's ``slice(start, stop, step)`` syntax. All properties are optional.",
   "type": "object",
   "properties": {
     "start": {

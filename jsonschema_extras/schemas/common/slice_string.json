@@ -3,7 +3,7 @@
   "$id": "file:/jsonschema_extras/schemas/common/slice_string.json",
   "$comment": "Use of format is extra here, the validation logic is fully implemented in the schema.",
   "title": "Slice string",
-  "description": "A string representing a slice operation in Python notation. Supports start:stop:step syntax where each component is optional and can be negative. Used for specifying ranges and steps in sequence operations.",
+  "description": "A string representing a slice operation in Python notation. Supports ``start:stop:step`` syntax where each component is optional and can be negative. Used for specifying ranges and steps in sequence operations.",
   "type": "string",
   "pattern": "^((\\-)?\\d+)?:((\\-)?\\d+)?(:(\\-)?\\d+)?$",
   "format": "slice-string",
