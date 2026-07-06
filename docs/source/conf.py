@@ -98,6 +98,22 @@ nitpick_ignore_regex = [
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'furo'
+html_theme_options = {
+    'source_repository': 'https://github.com/asrelo/jsonschema-extras',
+    'source_branch': 'master',
+    'source_directory': 'docs/source/',
+    'footer_icons': [
+        # XXX: When deployed on RTD, Furo automatically generates a very similar
+        #   icon unless `display_github=False` in theme options.
+        {
+            "name": "GitHub",
+            "url": 'https://github.com/asrelo/jsonschema-extras',
+            "html": '<img src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/brands/github.svg" />',
+            "class": "muted-link",
+            "name": "On GitHub",
+        },
+    ],
+}
 html_static_path = ['_static']
 
 
