@@ -6,7 +6,9 @@
 
 Utilities for working with the JSON Schema Python library [`jsonschema`](https://pypi.org/project/jsonschema/).
 
-See [documentation](https://asrelo.github.io/jsonschema-extras).
+**See [documentation](https://asrelo.github.io/jsonschema-extras).**
+
+**Contributions are welcome**, but please consider discussing it in [GitHub issues](https://github.com/asrelo/jsonschema-extras/issues) before committing to it.
 
 ## Features
 

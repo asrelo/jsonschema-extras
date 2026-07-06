@@ -40,6 +40,13 @@ Install via pip:
 
    pip install jsonschema-extras
 
+Notes
+-----
+
+**Contributions are welcome**, but please consider discussing it
+in `GitHub issues <https://github.com/asrelo/jsonschema-extras/issues>`_
+before committing to it.
+
 
 
 .. toctree::
