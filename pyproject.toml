@@ -40,24 +40,27 @@ documentation = "https://asrelo.github.io/jsonschema-extras"
 issues = "https://github.com/asrelo/jsonschema-extras/issues"
 
 [dependency-groups]
-dev = [
-    "flake8 ~=7.3",
-    "flake8-bugbear >=24.8.19",
-    "flake8-comprehensions ~=3.17",
-    "flake8-docstrings ~=1.7",
-    "flake8-isort ~=7.0",
-    "flake8-quotes ~=3.4",
+docs = [
     "furo >=2025.12.19",
     "Jinja2 ~=3.1",
-    "mypy ~=2.1",
-    "pep8-naming ~=0.15.0",
-    "pytest ~=9.0",
     "sphinx ~=9.0",
     "sphinx-autodoc-typehints ~=3.10",
     "sphinx-copybutton ~=0.5.2",
     'sphinx-design ~=0.7.0',
     # XXX: sphinx-jsonschema is good but incomplete
     #"sphinx-jsonschema >=1.19.2,<2",
+]
+dev = [
+    { include-group = "docs" },
+    "flake8 ~=7.3",
+    "flake8-bugbear >=24.8.19",
+    "flake8-comprehensions ~=3.17",
+    "flake8-docstrings ~=1.7",
+    "flake8-isort ~=7.0",
+    "flake8-quotes ~=3.4",
+    "mypy ~=2.1",
+    "pep8-naming ~=0.15.0",
+    "pytest ~=9.0",
     "tox ~=4.46",
     "types-docutils",
     "types-Jinja2",
