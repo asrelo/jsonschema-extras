@@ -1,0 +1,40 @@
+name: Release
+
+permissions:
+  contents: read
+
+on:
+  release:
+    types: [published]
+
+jobs:
+
+  tests:
+    uses: ./.github/workflows/_tests.yml
+
+  build-dist:
+    needs: tests
+    uses: ./.github/workflows/_build-dist.yml
+
+  publish-pypi:
+    needs: build-dist
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  build-docs:
+    needs: tests
+    uses: ./.github/workflows/_build-docs.yml
+
+  deploy-docs:
+    needs: build-docs
+    uses: ./.github/workflows/_deploy-docs.yml

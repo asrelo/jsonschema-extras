@@ -1,0 +1,16 @@
+name: Deploy docs manually
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build-docs:
+    uses: ./.github/workflows/_build-docs.yml
+
+  deploy-docs:
+    needs: build-docs
+    uses: ./.github/workflows/_deploy-docs.yml

@@ -1,0 +1,33 @@
+name: Publish to TestPyPI
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  tests:
+    uses: ./.github/workflows/_tests.yml
+
+  build-dist:
+    needs: tests
+    uses: ./.github/workflows/_build-dist.yml
+
+  publish-testpypi:
+    needs: build-dist
+    environment:
+      name: testpypi
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/

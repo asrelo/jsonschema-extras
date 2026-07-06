@@ -1,0 +1,25 @@
+name: Reusable deploy docs
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+jobs:
+
+  deploy-docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      id-token: write
+      pages: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
