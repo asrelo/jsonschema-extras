@@ -33,6 +33,8 @@ jobs:
 
   publish-pypi:
     needs: build
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event.inputs.use_testpypi && 'testpypi' || 'pypi' }}
@@ -46,12 +48,9 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
       - name: Publish to PyPI
         if: github.event_name == 'release' && !github.event.inputs.use_testpypi
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
 
   publish-docs:
     needs: build
