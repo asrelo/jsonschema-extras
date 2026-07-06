@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "file:/jsonschema_extras/schemas/common/slice_object.json",
+  "title": "Slice object",
+  "type": "object",
+  "properties": {
+    "start": { "type": "integer" },
+    "stop": { "type": "integer" },
+    "step": { "type": "integer" }
+  },
+  "additionalProperties": false
+}

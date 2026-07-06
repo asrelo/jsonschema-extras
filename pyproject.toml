@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools >=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jsonschema-extras"
+# XXX: PyPI web rendering glitches a lot when a email address is not present
+authors = [{ name = "Viacheslav Syropiatov", email = "nonexistent@example.com" }]
+description = "Utilities for working with the Python library 'jsonschema'"
+readme = "README.md"
+license = "MIT"
+keywords = [
+    "json",
+    "json schema",
+    "jsonschema",
+    "validation",
+    "extras",
+    "utilities",
+    "utils",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "jsonschema ~=4.26.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+source = "https://github.com/asrelo/jsonschema-extras"
+documentation = "https://asrelo.github.io/jsonschema-extras"
+issues = "https://github.com/asrelo/jsonschema-extras/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pylint ~=4.0",
+    "pytest ~=9.0",
+]
+
+[tool.setuptools.package-data]
+jsonschema_extras = [
+    "VERSION",
+    "schemas/**.json",
+]
+
+[tool.setuptools.dynamic]
+version = { file = ["jsonschema_extras/VERSION"] }

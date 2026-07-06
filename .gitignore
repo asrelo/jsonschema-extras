@@ -1,0 +1,18 @@
+### Python ###
+__pycache__/
+*.py[cod]
+# pytest
+.pytest_cache/
+# build
+*.egg-info
+
+### Editors ###
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+
+### Project
+# building
+dist/
+# virtual environments
+.venv/

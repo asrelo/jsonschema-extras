@@ -1,0 +1,13 @@
+[pytest]
+strict = true
+#consider_namespace_packages = true
+testpaths = ["jsonschema_extras"]
+addopts = [
+    "-ra",
+    "-q",
+    "--import-mode=append",
+    "--doctest-modules",
+]
+doctest_optionflags = [
+    "DONT_ACCEPT_TRUE_FOR_1",
+]

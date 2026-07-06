@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "file:/jsonschema_extras/schemas/common/slice_string.json",
+  "$comment": "Use of format is extra here, the validation logic is fully implemented in the schema.",
+  "title": "Slice string",
+  "type": "string",
+  "pattern": "^((\\-)?\\d+)?:((\\-)?\\d+)?(:(\\-)?\\d+)?$",
+  "format": "slice-string"
+}
