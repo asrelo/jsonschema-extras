@@ -10,12 +10,13 @@
 
 {% if exception_types %}
 **Exceptions** interpreted as format violations:
-{% for exception_type in exception_types %}
-  :py:exc:`{{ exception_type.path }}`
-  {{- ", " if not loop.last else "." -}}
-{% endfor %}
+{%- raw %} {% endraw %}
+{%- for exception_type in exception_types -%}
+:py:exc:`{{ exception_type.path }}`{{- ", " if not loop.last else "." -}}
+{%- endfor %}
 
 {% endif %}
+
 .. dropdown:: Validation function
 {% if not compact %}
    :open:
