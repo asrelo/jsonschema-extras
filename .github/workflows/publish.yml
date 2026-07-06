@@ -36,18 +36,11 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event.inputs.use_testpypi && 'testpypi' || 'pypi' }}
-      url: ${{ github.event.inputs.use_testpypi && 'https://test.pypi.org/p/${{ steps.metadata.outputs.name }}' || 'https://pypi.org/p/${{ steps.metadata.outputs.name }}' }}
     steps:
       - uses: actions/download-artifact@v5
         with:
           name: dist
           path: dist/
-      - name: Extract package name
-        id: metadata
-        run: |
-          wheel=$(ls dist/*.whl | head -1)
-          name=$(python -c "import wheel.wheelfile; w = wheel.wheelfile.WheelFile('$wheel'); print(w.metadata['Name'])")
-          echo "name=$name" >> $GITHUB_OUTPUT
       - name: Publish to TestPyPI
         if: github.event.inputs.use_testpypi || github.event_name != 'release'
         uses: pypa/gh-action-pypi-publish@release/v1
