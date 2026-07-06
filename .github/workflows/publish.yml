@@ -1,0 +1,95 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      use_testpypi:
+        description: "Publish to TestPyPI instead of PyPI"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install build tools
+        run: pip install build
+      - name: Build distribution
+        run: python -m build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.use_testpypi && 'testpypi' || 'pypi' }}
+      url: ${{ github.event.inputs.use_testpypi && 'https://test.pypi.org/p/${{ steps.metadata.outputs.name }}' || 'https://pypi.org/p/${{ steps.metadata.outputs.name }}' }}
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist/
+      - name: Extract package name
+        id: metadata
+        run: |
+          wheel=$(ls dist/*.whl | head -1)
+          name=$(python -c "import wheel.wheelfile; w = wheel.wheelfile.WheelFile('$wheel'); print(w.metadata['Name'])")
+          echo "name=$name" >> $GITHUB_OUTPUT
+      - name: Publish to TestPyPI
+        if: github.event.inputs.use_testpypi || github.event_name != 'release'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      - name: Publish to PyPI
+        if: github.event_name == 'release' && !github.event.inputs.use_testpypi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  publish-docs:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install dependencies
+        run: pip install -e . --group docs
+      - name: Build docs
+        run: sphinx-build -E -b html docs/source docs/build/html
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: docs/build/html
+
+  deploy-docs:
+    needs: publish-docs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
