@@ -17,7 +17,7 @@ SLICE_STRING_PATTERN = re.compile(
 
 
 def is_slice_string(instance: object) -> bool:
-    '''Tests if a string specifies a slice.
+    """Tests if a string specifies a slice.
 
     A slice string follows Python's :class:`slice` syntax: ``start:stop:step``
     where ``start``, ``stop``, and ``step`` are optional integers
@@ -57,7 +57,7 @@ def is_slice_string(instance: object) -> bool:
             Traceback (most recent call last):
                 ...
             TypeError: str expected, got <class 'int'>
-    '''
+    """
     if not isinstance(instance, str):
         raise TypeError(f'str expected, got {type(instance)!r}')
     return (SLICE_STRING_PATTERN.match(instance) is not None)

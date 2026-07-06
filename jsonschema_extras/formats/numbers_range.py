@@ -5,7 +5,7 @@ from ._common import FormatCheckingFuncInfo
 
 
 def is_numbers_range(instance: object) -> bool:
-    '''Tests if an object is a numbers range (a sequence of 2 numbers
+    """Tests if an object is a numbers range (a sequence of 2 numbers
     in non-descending order).
 
     A numbers range is defined as a sequence containing exactly 2 comparable
@@ -37,7 +37,7 @@ def is_numbers_range(instance: object) -> bool:
             False
             >>> is_numbers_range(5)
             False
-    '''
+    """
     if not (
         isinstance(instance, Sequence)
         and (not isinstance(instance, tuple(SEQUENCE_PRIMITIVE_TYPES_DEFAULT)))

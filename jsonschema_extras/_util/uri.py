@@ -26,7 +26,7 @@ class RPURIBValidateURIValueErrorCode(StrEnum):
 class RPURIBValidateURIValueError(ValueError):
 
     def __init__(self, message: str, code: RPURIBValidateURIValueErrorCode):
-        super().__init__(message)
+        super().__init__(message, code)
         self.code = code
 
 

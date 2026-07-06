@@ -12,6 +12,7 @@ extend-ignore =
     D405,
     D410,
     D411,
+    D412,
     D415,
 extend-exclude =
     .venv,

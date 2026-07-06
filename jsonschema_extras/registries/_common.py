@@ -64,8 +64,7 @@ class RetrieversChain(list[Retrieve[D]], Generic[D]):
 
     @property
     def postpone_excs(self) -> Collection[type[Exception]]:
-        """Exposed read‑only view of postpone_excs passed into the constructor.
-        """
+        """Exposed read‑only view of postpone_excs passed into the constructor."""
         return self._postpone_excs
 
     @property
