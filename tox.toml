@@ -1,0 +1,49 @@
+requires = ["tox >=4.46"]
+
+env_list = [
+    "py312",
+    "py313",
+    "py314",
+    "lint",
+    "typecheck",
+]
+
+[env_run_base]
+description = "Run test suite under {env_name}"
+package = "editable"
+deps = [
+    "pytest ~=9.0",
+]
+commands = [
+    ["pytest", { replace = "posargs", extend = true }],
+]
+
+[env.lint]
+description = "Run style checkers and linters"
+skip_install = true
+deps = [
+    "flake8 ~=7.3",
+    "flake8-bugbear >=24.8.19",
+    "flake8-comprehensions ~=3.17",
+    "flake8-docstrings ~=1.7",
+    "flake8-isort ~=7.0",
+    "flake8-quotes ~=3.4",
+    "pep8-naming ~=0.15.0",
+]
+commands = [
+    ["flake8"],
+]
+
+[env.typecheck]
+description = "Run static type checks"
+skip_install = true
+deps = [
+    "mypy ~=2.1",
+    "pytest ~=9.0",
+    "types-docutils",
+    "types-Jinja2",
+    "types-jsonschema",
+]
+commands = [
+    ["mypy", "."],
+]
