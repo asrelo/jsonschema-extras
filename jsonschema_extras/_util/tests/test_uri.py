@@ -34,14 +34,14 @@ class TestIsUriAbsolute:
         ],
     )
     @staticmethod
-    def test_absolute_returns_true(uri, is_absolute) -> None:
+    def test_absolute_returns_true(uri, is_absolute):
         assert is_uri_absolute(uri) == is_absolute
 
     @pytest.mark.parametrize(
         ('uri', 'is_absolute'), [('https://a.b', True), ('/x', False)],
     )
     @staticmethod
-    def test_accepts_pre_parsed_split_result(uri, is_absolute) -> None:
+    def test_accepts_pre_parsed_split_result(uri, is_absolute):
         assert is_uri_absolute(urlsplit(uri)) == is_absolute
 
 

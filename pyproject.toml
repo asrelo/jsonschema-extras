@@ -95,5 +95,5 @@ module = "*.tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = "docs/utils/**/*.py"
+module = "docs.utils.*"
 disallow_untyped_defs = false

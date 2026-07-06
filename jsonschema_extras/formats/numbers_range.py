@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import cast
 
 from jsonschema_extras._util import SEQUENCE_PRIMITIVE_TYPES_DEFAULT
 from ._common import FormatCheckingFuncInfo
@@ -45,7 +46,7 @@ def is_numbers_range(instance: object) -> bool:
     ):
         return False
     try:
-        return (instance[0] <= instance[1])
+        return cast(bool, (instance[0] <= instance[1]))
     except TypeError:
         return False
 
